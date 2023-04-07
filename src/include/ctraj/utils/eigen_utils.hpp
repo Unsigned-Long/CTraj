@@ -1,0 +1,113 @@
+/**
+BSD 3-Clause License
+
+This file is part of the Basalt project.
+https://gitlab.com/VladyslavUsenko/ns_ctraj-headers.git
+
+Copyright (c) 2019, Vladyslav Usenko and Nikolaus Demmel.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of the copyright holder nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+@file
+@brief Definition of the standard containers with Eigen allocator.
+*/
+
+#pragma once
+
+#include <deque>
+#include <map>
+#include <unordered_map>
+#include <vector>
+#include <Eigen/Dense>
+
+namespace Eigen {
+
+    template<typename T>
+    using aligned_vector = std::vector<T, Eigen::aligned_allocator<T>>;
+
+    template<typename T>
+    using aligned_deque = std::deque<T, Eigen::aligned_allocator<T>>;
+
+    template<typename K, typename V>
+    using aligned_map = std::map<K, V, std::less<K>, Eigen::aligned_allocator<std::pair<K const, V>>>;
+
+    template<typename K, typename V>
+    using aligned_unordered_map =
+            std::unordered_map<K, V, std::hash<K>, std::equal_to<K>, Eigen::aligned_allocator<std::pair<K const, V>>>;
+
+    inline Eigen::Affine3d GetTransBetween(Eigen::Vector3d transStart, const Eigen::Quaterniond &rotStart,
+                                           Eigen::Vector3d transEnd, const Eigen::Quaterniond &rotEnd) {
+        Eigen::Translation3d t_s(transStart(0), transStart(1), transStart(2));
+        Eigen::Translation3d t_e(transEnd(0), transEnd(1), transEnd(2));
+
+        Eigen::Affine3d start = t_s * rotStart.toRotationMatrix();
+        Eigen::Affine3d end = t_e * rotEnd.toRotationMatrix();
+
+        Eigen::Affine3d result = start.inverse() * end;
+        return result;
+    }
+
+    template<typename ScaleType>
+    inline auto VectorToEigenQuaternion(const std::vector<ScaleType> &vec) {
+        Eigen::Quaternion<ScaleType> quaternion;
+        quaternion.x() = vec.at(0);
+        quaternion.y() = vec.at(1);
+        quaternion.z() = vec.at(2);
+        quaternion.w() = vec.at(3);
+        return quaternion;
+    }
+
+    template<typename ScaleType>
+    inline auto EigenQuaternionToVector(const Eigen::Quaternion<ScaleType> &quaternion) {
+        std::vector<ScaleType> vec(4);
+        vec.at(0) = quaternion.x();
+        vec.at(1) = quaternion.y();
+        vec.at(2) = quaternion.z();
+        vec.at(3) = quaternion.w();
+        return vec;
+    }
+
+    template<typename ScaleType, int M>
+    inline auto EigenVecToVector(const Eigen::Matrix<ScaleType, M, 1> &eigenVec) {
+        std::vector<ScaleType> vec(M);
+        for (int i = 0; i < vec.size(); ++i) {
+            vec.at(i) = eigenVec(i);
+        }
+        return vec;
+    }
+
+    template<typename ScaleType, int M>
+    inline auto VectorToEigenVec(const std::vector<ScaleType> &vec) {
+        Eigen::Matrix<ScaleType, M, 1> eigenVec;
+        for (int i = 0; i < vec.size(); ++i) {
+            eigenVec(i) = vec.at(i);
+        }
+        return eigenVec;
+    }
+
+
+}  // namespace Eigen
