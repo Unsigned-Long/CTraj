@@ -2,8 +2,8 @@
 // Created by csl on 10/3/22.
 //
 
-#ifndef LIC_CALIB_FUNCTOR_TYPEDEF_HPP
-#define LIC_CALIB_FUNCTOR_TYPEDEF_HPP
+#ifndef CTRAJ_FUNCTOR_TYPEDEF_HPP
+#define CTRAJ_FUNCTOR_TYPEDEF_HPP
 
 #include "ctraj/spline/ceres_spline_helper.h"
 #include "ctraj/spline/ceres_spline_helper_jet.h"
@@ -39,4 +39,4 @@ namespace ns_ctraj {
     using Matrix3 = Sophus::Matrix3<T>;
 }
 
-#endif //LIC_CALIB_FUNCTOR_TYPEDEF_HPP
+#endif //CTRAJ_FUNCTOR_TYPEDEF_HPP

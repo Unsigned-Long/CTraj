@@ -2,8 +2,8 @@
 // Created by csl on 10/2/22.
 //
 
-#ifndef LIC_CALIB_SE3_SPLINE_H
-#define LIC_CALIB_SE3_SPLINE_H
+#ifndef CTRAJ_TRAJECTORY_H
+#define CTRAJ_TRAJECTORY_H
 
 #include "ctraj/spline/se3_spline.h"
 #include "optional"
@@ -139,4 +139,4 @@ namespace ns_ctraj {
     };
 }
 
-#endif //LIC_CALIB_SE3_SPLINE_H
+#endif //CTRAJ_TRAJECTORY_H

@@ -2,8 +2,8 @@
 // Created by csl on 10/3/22.
 //
 
-#ifndef LIC_CALIB_ODOMETER_POSE_H
-#define LIC_CALIB_ODOMETER_POSE_H
+#ifndef CTRAJ_ODOMETER_POSE_H
+#define CTRAJ_ODOMETER_POSE_H
 
 #include "Eigen/Dense"
 #include "sophus/se3.hpp"
@@ -101,4 +101,4 @@ namespace ns_ctraj {
     using Posef = Pose<float>;
 }
 
-#endif //LIC_CALIB_ODOMETER_POSE_H
+#endif //CTRAJ_ODOMETER_POSE_H

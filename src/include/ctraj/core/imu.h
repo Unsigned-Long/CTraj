@@ -2,8 +2,8 @@
 // Created by csl on 10/1/22.
 //
 
-#ifndef LIC_CALIB_IMU_H
-#define LIC_CALIB_IMU_H
+#ifndef CTRAJ_IMU_H
+#define CTRAJ_IMU_H
 
 #include "filesystem"
 #include "fstream"
@@ -64,4 +64,4 @@ namespace ns_ctraj {
 }
 
 
-#endif //LIC_CALIB_IMU_H
+#endif //CTRAJ_IMU_H
