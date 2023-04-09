@@ -120,7 +120,6 @@ namespace ns_ctraj {
             } else {
                 defaultSolverOptions.num_threads = threadNum;
             }
-            std::cout << defaultSolverOptions.num_threads << std::endl;
 
             return defaultSolverOptions;
         }
