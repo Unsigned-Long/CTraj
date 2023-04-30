@@ -11,6 +11,16 @@
 
 namespace ns_ctraj {
     template<class ScalarType>
+    inline Sophus::Matrix3<ScalarType> AdjustRotationMatrix(const Sophus::Matrix3<ScalarType> &rotMat) {
+        // adjust
+        Eigen::JacobiSVD<Sophus::Matrix3<ScalarType>> svd(rotMat, Eigen::ComputeFullV | Eigen::ComputeFullU);
+        const Sophus::Matrix3<ScalarType> &vMatrix = svd.matrixV();
+        const Sophus::Matrix3<ScalarType> &uMatrix = svd.matrixU();
+        Sophus::Matrix3<ScalarType> adjustedRotMat = uMatrix * vMatrix.transpose();
+        return adjustedRotMat;
+    }
+
+    template<class ScalarType>
     struct OdomPose {
         double timeStamp;
         Eigen::Matrix<ScalarType, 4, 4> pose;
