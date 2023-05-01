@@ -91,15 +91,15 @@ namespace ns_ctraj {
 
         Eigen::Vector3d LinearAcceInRef(double t) {
             if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
-            const auto &posSpline = this->getPosSpline();
+            const auto &posSpline = this->GetPosSpline();
             Eigen::Vector3d acceInRef = posSpline.acceleration(t);
             return acceInRef;
         }
 
         Eigen::Vector3d AngularVeloInRef(double t) {
             if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
-            const auto &so3Spline = this->getSo3Spline();
-            const auto &posSpline = this->getPosSpline();
+            const auto &so3Spline = this->GetSo3Spline();
+            const auto &posSpline = this->GetPosSpline();
             auto SO3_BodyToRef = so3Spline.evaluate(t);
             Eigen::Vector3d angularVelInRef = SO3_BodyToRef * so3Spline.velocityBody(t);
             return angularVelInRef;
@@ -107,15 +107,15 @@ namespace ns_ctraj {
 
         Eigen::Vector3d LinearVeloInRef(double t) {
             if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
-            const auto &posSpline = this->getPosSpline();
+            const auto &posSpline = this->GetPosSpline();
             Eigen::Vector3d veloInRef = posSpline.velocity(t);
             return veloInRef;
         }
 
         Eigen::Vector3d AngularAcceInRef(double t) {
             if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
-            const auto &so3Spline = this->getSo3Spline();
-            const auto &posSpline = this->getPosSpline();
+            const auto &so3Spline = this->GetSo3Spline();
+            const auto &posSpline = this->GetPosSpline();
             auto SO3_BodyToRef = so3Spline.evaluate(t);
             Eigen::Vector3d angularAcceInRef = SO3_BodyToRef * so3Spline.accelerationBody(t);
             return angularAcceInRef;
