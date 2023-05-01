@@ -60,10 +60,10 @@ namespace ns_ctraj {
         SimuTrajectory operator*(const Sophus::SE3d &pose) const {
             SimuTrajectory newTraj = *this;
             for (auto &item: newTraj._poseSeq) { item = Posed::FromSE3(item.se3() * pose, item.timeStamp); }
-            for (int i = 0; i < newTraj._trajectory->numKnots(); ++i) {
-                auto curKnot = newTraj._trajectory->getKnot(i);
+            for (int i = 0; i < newTraj._trajectory->NumKnots(); ++i) {
+                auto curKnot = newTraj._trajectory->GetKnot(i);
                 auto newKnot = curKnot * pose;
-                newTraj._trajectory->setKnot(newKnot, i);
+                newTraj._trajectory->SetKnot(newKnot, i);
             }
             return newTraj;
         }
@@ -71,10 +71,10 @@ namespace ns_ctraj {
         SimuTrajectory operator!() const {
             SimuTrajectory newTraj = *this;
             for (auto &item: newTraj._poseSeq) { item = Posed::FromSE3(item.se3().inverse(), item.timeStamp); }
-            for (int i = 0; i < newTraj._trajectory->numKnots(); ++i) {
-                auto curKnot = newTraj._trajectory->getKnot(i);
+            for (int i = 0; i < newTraj._trajectory->NumKnots(); ++i) {
+                auto curKnot = newTraj._trajectory->GetKnot(i);
                 auto newKnot = curKnot.inverse();
-                newTraj._trajectory->setKnot(newKnot, i);
+                newTraj._trajectory->SetKnot(newKnot, i);
             }
             return newTraj;
         }
@@ -82,10 +82,10 @@ namespace ns_ctraj {
         friend SimuTrajectory operator*(const Sophus::SE3d &pose, const SimuTrajectory &simuTrajectory) {
             SimuTrajectory newTraj = simuTrajectory;
             for (auto &item: newTraj._poseSeq) { item = Posed::FromSE3(pose * item.se3(), item.timeStamp); }
-            for (int i = 0; i < newTraj._trajectory->numKnots(); ++i) {
-                auto curKnot = newTraj._trajectory->getKnot(i);
+            for (int i = 0; i < newTraj._trajectory->NumKnots(); ++i) {
+                auto curKnot = newTraj._trajectory->GetKnot(i);
                 auto newKnot = pose * curKnot;
-                newTraj._trajectory->setKnot(newKnot, i);
+                newTraj._trajectory->SetKnot(newKnot, i);
             }
             return newTraj;
         }
