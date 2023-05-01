@@ -60,33 +60,30 @@ namespace ns_ctraj {
         SimuTrajectory operator*(const Sophus::SE3d &pose) const {
             SimuTrajectory newTraj = *this;
             for (auto &item: newTraj._poseSeq) { item = Posed::FromSE3(item.se3() * pose, item.timeStamp); }
-            for (int i = 0; i < newTraj._trajectory->NumKnots(); ++i) {
-                auto curKnot = newTraj._trajectory->GetKnot(i);
-                auto newKnot = curKnot * pose;
-                newTraj._trajectory->SetKnot(newKnot, i);
-            }
+            // fit new trajectory
+            double sTime = newTraj._trajectory->MinTime(), eTime = newTraj._trajectory->MaxTime();
+            newTraj._trajectory = Traj::Create(2.0 / newTraj._hz, sTime, eTime);
+            EstimateTrajectory(newTraj._poseSeq, newTraj._trajectory);
             return newTraj;
         }
 
         SimuTrajectory operator!() const {
             SimuTrajectory newTraj = *this;
             for (auto &item: newTraj._poseSeq) { item = Posed::FromSE3(item.se3().inverse(), item.timeStamp); }
-            for (int i = 0; i < newTraj._trajectory->NumKnots(); ++i) {
-                auto curKnot = newTraj._trajectory->GetKnot(i);
-                auto newKnot = curKnot.inverse();
-                newTraj._trajectory->SetKnot(newKnot, i);
-            }
+            // fit new trajectory
+            double sTime = newTraj._trajectory->MinTime(), eTime = newTraj._trajectory->MaxTime();
+            newTraj._trajectory = Traj::Create(2.0 / newTraj._hz, sTime, eTime);
+            EstimateTrajectory(newTraj._poseSeq, newTraj._trajectory);
             return newTraj;
         }
 
         friend SimuTrajectory operator*(const Sophus::SE3d &pose, const SimuTrajectory &simuTrajectory) {
             SimuTrajectory newTraj = simuTrajectory;
             for (auto &item: newTraj._poseSeq) { item = Posed::FromSE3(pose * item.se3(), item.timeStamp); }
-            for (int i = 0; i < newTraj._trajectory->NumKnots(); ++i) {
-                auto curKnot = newTraj._trajectory->GetKnot(i);
-                auto newKnot = pose * curKnot;
-                newTraj._trajectory->SetKnot(newKnot, i);
-            }
+            // fit new trajectory
+            double sTime = newTraj._trajectory->MinTime(), eTime = newTraj._trajectory->MaxTime();
+            newTraj._trajectory = Traj::Create(2.0 / newTraj._hz, sTime, eTime);
+            EstimateTrajectory(newTraj._poseSeq, newTraj._trajectory);
             return newTraj;
         }
 
