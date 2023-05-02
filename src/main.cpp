@@ -9,6 +9,7 @@ int main() {
     double sTime = 0.0, eTime = 2.0 * M_PI;
     // auto trajItoW = ns_ctraj::SimuCircularMotion<4>(2.0, sTime, eTime);
     auto trajItoW = ns_ctraj::SimuSpiralMotion<4>(2.0, 2.0);
+    // auto trajItoW = ns_ctraj::SimuEightShapeMotion<4>(5.0, 4.0, 0.5);
     // auto trajItoW = ns_ctraj::SimuWaveMotion<4>(2.0, 0.5, 0.0, 2 * M_PI, 1000.0);
     // auto trajItoW = ns_ctraj::SimuUniformLinearMotion<4>({0.0, 0.0, 0.0}, {5.0, 5.0, 5.0});
     // auto trajItoW = ns_ctraj::SimuUniformAcceleratedMotion<4>({0.0, 0.0, 0.0}, {5.0, 5.0, 5.0});
@@ -16,10 +17,7 @@ int main() {
     // auto traj2 = trajItoW * Sophus::SE3d(Sophus::SO3d(), Eigen::Vector3d(1, 1, 1));
     // auto traj3 = Sophus::SE3d(Sophus::SO3d(), Eigen::Vector3d(1, 1, 1)) * trajItoW;
 
-    ns_ctraj::Viewer viewer("/home/csl/CppWorks/artwork/ctraj/img", "simu_trajectory");
-
-    trajItoW.Visualization(viewer, false);
-    viewer.RunSingleThread();
+    trajItoW.VisualizationDynamic();
 
     trajItoW.GetTrajectory()->Save("/home/csl/CppWorks/artwork/ctraj/output/simu_wave_motion.json");
     return 0;
