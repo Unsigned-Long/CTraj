@@ -256,6 +256,42 @@ namespace ns_ctraj {
     };
 
     template<int Order>
+    class SimuWaveMotion2 : public SimuTrajectory<Order> {
+    public:
+        using Parent = SimuTrajectory<Order>;
+
+    protected:
+        double _radius;
+        double _height;
+
+    public:
+        explicit SimuWaveMotion2(double radius = 2.0, double height = 0.5,
+                                 double sTime = 0.0, double eTime = 2 * M_PI, double hz = 10.0)
+                : _radius(radius), _height(height), Parent(sTime, eTime, hz) {
+            this->SimulateTrajectory();
+        }
+
+    protected:
+        Posed GenPoseSequenceAtTime(double t) override {
+            Eigen::Vector3d trans;
+            trans(0) = std::cos(t) * _radius;
+            trans(1) = std::sin(t) * _radius;
+            trans(2) = std::sin(2 * M_PI * t) * _height;
+
+            Eigen::Vector3d yAxis = -trans.normalized();
+            Eigen::Vector3d xAxis = Eigen::Vector3d(-trans(1), trans(0), 0.0).normalized();
+            Eigen::Vector3d zAxis = xAxis.cross(yAxis);
+            Eigen::Matrix3d rotMatrix;
+            rotMatrix.col(0) = xAxis;
+            rotMatrix.col(1) = yAxis;
+            rotMatrix.col(2) = zAxis;
+            rotMatrix = Eigen::AngleAxisd(t, Eigen::Vector3d(0.0, 0.0, 1.0)).matrix() * rotMatrix;
+
+            return {Sophus::SO3d(rotMatrix), trans, t};
+        }
+    };
+
+    template<int Order>
     class SimuEightShapeMotion : public SimuTrajectory<Order> {
     public:
         using Parent = SimuTrajectory<Order>;
