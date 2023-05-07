@@ -44,6 +44,8 @@ namespace ns_ctraj {
             return _hz;
         }
 
+#ifdef USE_SLAM_SCENE_VIEWER
+
         void Visualization(const std::string &saveShotPath = "", bool showPoseSeq = true,
                            double trajSamplingTimeDis = 0.01) {
             Viewer viewer(saveShotPath);
@@ -97,6 +99,7 @@ namespace ns_ctraj {
             EstimateTrajectory(newTraj._poseSeq, newTraj._trajectory);
             return newTraj;
         }
+#endif
 
         SimuTrajectory operator!() const {
             SimuTrajectory newTraj = *this;

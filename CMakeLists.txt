@@ -29,16 +29,6 @@ set(LIBRARY_CMAKE_EXPORT_DIR ${CMAKE_INSTALL_DATADIR}/${LIBRARY_NAME}/cmake)
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES EXPORT_NAME ${LIBRARY_NAMESPACE})
 
-install(
-        TARGETS ${LIBRARY_NAME}
-        EXPORT ${LIBRARY_NAMESPACE}Targets
-)
-install(
-        EXPORT ${LIBRARY_NAMESPACE}Targets
-        NAMESPACE ${LIBRARY_NAMESPACE}::
-        DESTINATION ${LIBRARY_CMAKE_EXPORT_DIR}
-)
-
 export(
         TARGETS ${LIBRARY_NAME}
         NAMESPACE ${LIBRARY_NAMESPACE}::
@@ -60,18 +50,4 @@ write_basic_package_version_file(
         ${LIBRARY_NAMESPACE}ConfigVersion.cmake
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
-)
-
-# Install cmake targets
-install(
-        FILES ${CMAKE_BINARY_DIR}/${LIBRARY_NAMESPACE}Config.cmake
-        ${CMAKE_BINARY_DIR}/${LIBRARY_NAMESPACE}ConfigVersion.cmake
-        DESTINATION ${LIBRARY_CMAKE_EXPORT_DIR}
-)
-
-# Install header files
-
-install(
-        DIRECTORY ${CMAKE_SOURCE_DIR}/src/include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

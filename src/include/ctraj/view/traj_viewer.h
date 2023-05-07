@@ -5,6 +5,8 @@
 #ifndef CTRAJ_TRAJ_VIEWER_H
 #define CTRAJ_TRAJ_VIEWER_H
 
+#ifdef USE_SLAM_SCENE_VIEWER
+
 #include "slam-scene-viewer/scene_viewer.h"
 #include "thread"
 #include "ctraj/utils/eigen_utils.hpp"
@@ -47,8 +49,7 @@ namespace ns_ctraj {
 
     };
 
-
 }
-
+#endif
 
 #endif //CTRAJ_TRAJ_VIEWER_H

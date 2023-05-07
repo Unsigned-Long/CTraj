@@ -4,9 +4,11 @@
 
 #include "ctraj/view/traj_viewer.h"
 
+#ifdef USE_SLAM_SCENE_VIEWER
+
 namespace ns_ctraj {
 
-    void Viewer::ShowPoseSequence(const Eigen::aligned_vector<PoseSeqDisplay> &seq, float size) {
+    void Viewer::ShowPoseSequence(const Eigen::aligned_vector <PoseSeqDisplay> &seq, float size) {
 
         for (int j = 0; j < seq.size(); ++j) {
             const auto &s = seq.at(j);
@@ -40,5 +42,5 @@ namespace ns_ctraj {
 
     }
 
-
 }
+#endif
