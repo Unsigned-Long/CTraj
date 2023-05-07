@@ -4,10 +4,13 @@ find_package(Eigen3)
 find_package(Sophus)
 find_package(Ceres)
 
-if (USE_SLAM_SCENE_VIEWER)
+if (DEFINED USE_SLAM_SCENE_VIEWER)
     find_package(SlamSceneViewer)
     add_definitions(-DUSE_SLAM_SCENE_VIEWER)
-endif (USE_SLAM_SCENE_VIEWER)
+    message(STATUS "use slam scene viewer library")
+else ()
+    message(STATUS "don't use slam scene viewer library")
+endif ()
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/core CORE_SRC_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/view VIEW_SRC_FILES)
@@ -30,12 +33,12 @@ target_link_libraries(
         ${CERES_LIBRARIES}
 )
 
-if (USE_SLAM_SCENE_VIEWER)
+if (DEFINED USE_SLAM_SCENE_VIEWER)
     target_link_libraries(
             ${LIBRARY_NAME} PUBLIC
             SlamSceneViewer::SlamSceneViewer
     )
-endif (USE_SLAM_SCENE_VIEWER)
+endif ()
 
 # example & test
 
