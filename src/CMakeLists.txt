@@ -9,7 +9,7 @@ if (DEFINED USE_SLAM_SCENE_VIEWER)
     add_definitions(-DUSE_SLAM_SCENE_VIEWER)
     message(STATUS "use slam scene viewer library")
 else ()
-    message(STATUS "don't use slam scene viewer library")
+    message(STATUS "don't use slam scene viewer library (Activate it by defining "USE_SLAM_SCENE_VIEWER")")
 endif ()
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/core CORE_SRC_FILES)
