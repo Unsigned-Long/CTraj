@@ -57,14 +57,9 @@ namespace ns_ctraj {
             return poseSeq;
         }
 
-#ifdef USE_SLAM_SCENE_VIEWER
-
         void Visualization(Viewer &viewer, double trajSamplingTimeDis = 0.01) {
-            viewer.ShowPoseSequence(
-                    {PoseSeqDisplay(this->Sampling(trajSamplingTimeDis), PoseSeqDisplay::Mode::COORD)}
-            );
+            viewer.ShowPoseSequence(this->Sampling(trajSamplingTimeDis));
         }
-#endif
 
         Eigen::aligned_vector<IMUFrame::Ptr>
         ComputeIMUMeasurement(const Eigen::Vector3d &gravityInRef, double timeDis = INVALID_TIME_STAMP,
