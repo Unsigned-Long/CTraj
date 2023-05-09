@@ -44,49 +44,32 @@ namespace ns_ctraj {
             return _hz;
         }
 
-#ifdef USE_SLAM_SCENE_VIEWER
 
         void Visualization(const std::string &saveShotPath = "", bool showPoseSeq = true,
                            double trajSamplingTimeDis = 0.01) {
-            Viewer viewer(saveShotPath);
+            Viewer viewer(saveShotPath, "Visualization");
             if (showPoseSeq) {
-                viewer.ShowPoseSequence(
-                        {PoseSeqDisplay(_poseSeq, PoseSeqDisplay::Mode::ARROW),
-                         PoseSeqDisplay(_trajectory->Sampling(trajSamplingTimeDis), PoseSeqDisplay::Mode::COORD)}
-                );
+                viewer.ShowPoseSequence(_poseSeq);
             } else {
-                viewer.ShowPoseSequence(
-                        {PoseSeqDisplay(_trajectory->Sampling(trajSamplingTimeDis), PoseSeqDisplay::Mode::COORD)}
-                );
+                viewer.ShowPoseSequence(_trajectory->Sampling(trajSamplingTimeDis));
             }
-            viewer.RunSingleThread();
+            viewer.RunInSingleThread();
         }
 
-        void VisualizationDynamic(const std::string &saveShotPath = "", double trajSamplingTimeDis = 0.05) {
-            Viewer viewer(saveShotPath);
+        void VisualizationDynamic(const std::string &saveShotPath = "", double trajSamplingTimeDis = 0.01) {
             auto poseSeq = _trajectory->Sampling(trajSamplingTimeDis);
-            for (const Posed &pose: poseSeq) {
-                viewer.AddIMU(
-                        ns_viewer::Posed(pose.so3.matrix(), pose.t).cast<float>(),
-                        ns_viewer::Colour::Red().WithAlpha(0.05f), 0.1f
-                );
-            }
-            viewer.RunMultiThread();
+            Viewer viewer(saveShotPath, "VisualizationDynamic");
+            viewer.RunInMultiThread();
             for (int i = 0; i < poseSeq.size() - 1; ++i) {
                 int j = i + 1;
                 const auto &pi = poseSeq.at(i);
                 const auto &pj = poseSeq.at(j);
                 double ti = pi.timeStamp, tj = pj.timeStamp, dt = tj - ti;
-                viewer.Lock();
-                auto names = viewer.AddIMU(
-                        ns_viewer::Posed(pi.so3.matrix(), pi.t).cast<float>(), ns_viewer::Colour::Red(), 0.1f
+                auto coord = ns_viewer::Coordinate::Create(
+                        ns_viewer::Posed(pi.so3.matrix(), pi.t).cast<float>(), 0.3f
                 );
-                viewer.UnLock();
+                viewer.AddEntity(coord);
                 std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(dt * 1000.0)));
-                // remove
-                viewer.Lock();
-                viewer.RemoveEntities(names);
-                viewer.UnLock();
             }
         }
 
@@ -99,7 +82,6 @@ namespace ns_ctraj {
             EstimateTrajectory(newTraj._poseSeq, newTraj._trajectory);
             return newTraj;
         }
-#endif
 
         SimuTrajectory operator!() const {
             SimuTrajectory newTraj = *this;
