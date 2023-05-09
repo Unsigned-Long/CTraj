@@ -10,6 +10,6 @@
 
 Generate specific trajectory using b-splines...
 
-<img src="img/1680853971430026110.png" width=50%><img src="img/1680854009588266206.png" width=50%>
+<img src="img/1683616369198897886.png" width=50%><img src="img/1683616430348972639.png" width=50%>
 
-<img src="img/1680854043678683712.png" width=50%><img src="img/1680855387536475057.png" width=50%>
+<img src="img/1683616409382605026.png" width=50%><img src="img/1683616463346953319.png" width=50%>
