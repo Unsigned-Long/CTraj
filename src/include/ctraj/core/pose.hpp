@@ -29,6 +29,12 @@ namespace ns_ctraj {
                           const Eigen::Matrix<ScalarType, 4, 4> &pose = Eigen::Matrix<ScalarType, 4, 4>::Identity())
                 : timeStamp(timeStamp), pose(pose) {
         }
+
+    public:
+        template<class Archive>
+        void serialize(Archive &ar) {
+            ar(CEREAL_NVP(timeStamp), CEREAL_NVP(pose));
+        }
     };
 
     using OdomPosed = OdomPose<double>;
@@ -105,6 +111,12 @@ namespace ns_ctraj {
 
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    public:
+        template<class Archive>
+        void serialize(Archive &ar) {
+            ar(CEREAL_NVP(timeStamp), CEREAL_NVP(so3), CEREAL_NVP(t));
+        }
     };
 
     using Posed = Pose<double>;

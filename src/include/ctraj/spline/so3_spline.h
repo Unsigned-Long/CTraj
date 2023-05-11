@@ -688,35 +688,17 @@ namespace ns_ctraj {
         std::array<Scalar, 4> pow_inv_dt;  ///< Array with inverse powers of dt
 
     public:
-        template<class Archive>
-        void save(Archive &ar) const {
-            Eigen::aligned_deque<std::vector<Scalar>> knotsVecDeque(knots.size());
-            for (int i = 0; i < knots.size(); ++i) {
-                knotsVecDeque.at(i) = Eigen::EigenQuaternionToVector(knots.at(i).unit_quaternion());
-            }
-            ar(
-                    cereal::make_nvp("knots", knotsVecDeque),
-                    cereal::make_nvp("dt", dt_),
-                    cereal::make_nvp("start_t", start_t_),
-                    cereal::make_nvp("pow_inv_dt", pow_inv_dt)
-            );
-        }
 
         template<class Archive>
-        void load(Archive &ar) {
-            Eigen::aligned_deque<std::vector<Scalar>> knotsVecDeque;
+        void serialize(Archive &ar) {
             ar(
-                    cereal::make_nvp("knots", knotsVecDeque),
+                    cereal::make_nvp("knots", knots),
                     cereal::make_nvp("dt", dt_),
                     cereal::make_nvp("start_t", start_t_),
                     cereal::make_nvp("pow_inv_dt", pow_inv_dt)
             );
-            knots.resize(knotsVecDeque.size());
-            for (int i = 0; i < knotsVecDeque.size(); ++i) {
-                knots.at(i) = SO3(Eigen::VectorToEigenQuaternion(knotsVecDeque.at(i)));
-            }
         }
-    };                                    // namespace ns_ctraj
+    };
 
     template<int N, typename Scalar>
     const typename So3Spline<N, Scalar>::MatN

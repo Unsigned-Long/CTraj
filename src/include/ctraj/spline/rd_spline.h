@@ -347,32 +347,13 @@ namespace ns_ctraj {
 
     public:
         template<class Archive>
-        void save(Archive &ar) const {
-            Eigen::aligned_deque<std::vector<Scalar>> knotsVecDeque(knots.size());
-            for (int i = 0; i < knots.size(); ++i) {
-                knotsVecDeque.at(i) = Eigen::EigenVecToVector(knots.at(i));
-            }
+        void serialize(Archive &ar) {
             ar(
-                    cereal::make_nvp("knots", knotsVecDeque),
+                    cereal::make_nvp("knots", knots),
                     cereal::make_nvp("dt", dt_),
                     cereal::make_nvp("start_t", start_t_),
                     cereal::make_nvp("pow_inv_dt", pow_inv_dt)
             );
-        }
-
-        template<class Archive>
-        void load(Archive &ar) {
-            Eigen::aligned_deque<std::vector<Scalar>> knotsVecDeque;
-            ar(
-                    cereal::make_nvp("knots", knotsVecDeque),
-                    cereal::make_nvp("dt", dt_),
-                    cereal::make_nvp("start_t", start_t_),
-                    cereal::make_nvp("pow_inv_dt", pow_inv_dt)
-            );
-            knots.resize(knotsVecDeque.size());
-            for (int i = 0; i < knotsVecDeque.size(); ++i) {
-                knots.at(i) = Eigen::VectorToEigenVec<Scalar, DIM_>(knotsVecDeque.at(i));
-            }
         }
     };
 

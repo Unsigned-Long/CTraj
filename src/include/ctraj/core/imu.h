@@ -12,6 +12,7 @@
 #include "ctraj/utils/macros.hpp"
 #include "ctraj/utils/eigen_utils.hpp"
 #include "utility"
+#include "ctraj/utils/sophus_utils.hpp"
 
 namespace ns_ctraj {
 
@@ -54,11 +55,21 @@ namespace ns_ctraj {
 
         // save imu frames sequence to disk
         static bool SaveFramesToDisk(
-                const std::string &directory, Eigen::aligned_vector<IMUFrame::Ptr> &frames, int precision = 10
+                const std::string &filename, const Eigen::aligned_vector<IMUFrame::Ptr> &frames, int precision = 10
         );
 
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    public:
+        template<class Archive>
+        void serialize(Archive &ar) {
+            ar(
+                    cereal::make_nvp("timestamp", _timestamp),
+                    cereal::make_nvp("linear_acce", _acce),
+                    cereal::make_nvp("angular_velo", _gyro)
+            );
+        }
     };
 
 }

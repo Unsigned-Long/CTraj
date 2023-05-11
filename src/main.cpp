@@ -17,9 +17,14 @@ int main() {
     // auto traj2 = trajItoW * Sophus::SE3d(Sophus::SO3d(), Eigen::Vector3d(1, 1, 1));
     // auto traj3 = Sophus::SE3d(Sophus::SO3d(), Eigen::Vector3d(1, 1, 1)) * trajItoW;
 
-    trajItoW.VisualizationDynamic("/home/csl/CppWorks/artwork/ctraj/img");
     trajItoW.Visualization("/home/csl/CppWorks/artwork/ctraj/img", false);
+    trajItoW.VisualizationDynamic("/home/csl/CppWorks/artwork/ctraj/img");
 
     trajItoW.GetTrajectory()->Save("/home/csl/CppWorks/artwork/ctraj/output/simu_wave_motion.json");
+    trajItoW.GetTrajectory()->ComputeIMUMeasurement({0.0, 0.0, -9.8}, 1.0 / 400.0);
+    IMUFrame::SaveFramesToDisk(
+            "/home/csl/CppWorks/artwork/ctraj/output/measurements.json",
+            trajItoW.GetTrajectory()->ComputeIMUMeasurement({0.0, 0.0, -9.8}, 1.0 / 400.0), 5
+    );
     return 0;
 }

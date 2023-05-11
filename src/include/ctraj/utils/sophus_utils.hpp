@@ -42,6 +42,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sophus/se3.hpp>
 #include <sophus/sim3.hpp>
 #include <ctraj/utils/eigen_utils.hpp>
+#include "tiny-viewer/entity/utils.h"
+
+namespace Sophus {
+    template<class Archive, typename ScaleTypes>
+    void serialize(Archive &archive, Sophus::SO3<ScaleTypes> &m) {
+        archive(m.data()[0], m.data()[1], m.data()[2], m.data()[3]);
+    }
+
+    template<class Archive, typename ScaleTypes>
+    void serialize(Archive &archive, Sophus::SE3<ScaleTypes> &m) {
+        archive(
+                // so3
+                m.data()[0], m.data()[1], m.data()[2], m.data()[3],
+                // trans
+                m.data()[4], m.data()[5], m.data()[6]
+        );
+    }
+}
 
 namespace Sophus {
 
