@@ -8,6 +8,7 @@
 #include "Eigen/Dense"
 #include "sophus/se3.hpp"
 #include "ctraj/utils/macros.hpp"
+#include "tiny-viewer/entity/utils.h"
 
 namespace ns_ctraj {
     template<class ScalarType>
