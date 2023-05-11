@@ -18,12 +18,7 @@ namespace ns_ctraj {
         using parent_type = ns_viewer::Viewer;
 
         explicit Viewer(const std::string &saveDir = "", const std::string &winName = "") :
-                parent_type([&winName, &saveDir]() {
-                    ns_viewer::ViewerConfigor configor;
-                    configor.Window.Name = winName;
-                    configor.Window.ScreenShotSaveDir = saveDir;
-                    return configor;
-                }()) {
+                parent_type(ns_viewer::ViewerConfigor(winName).WithScreenShotSaveDir(saveDir)) {
         }
 
         static auto Create(const std::string &saveDir = "", const std::string &winName = "") {
