@@ -14,6 +14,7 @@
 #include "ctraj/spline/ceres_spline_helper.h"
 #include "ctraj/spline/ceres_spline_helper_jet.h"
 #include "ctraj/view/traj_viewer.h"
+#include "ctraj/utils/utils.hpp"
 
 namespace ns_ctraj {
     template<int BSplineOrder>
@@ -120,7 +121,7 @@ namespace ns_ctraj {
         }
 
         /**
-         * @return [ x | y | z | target radial vel with respect to radar in frame {R} ]
+         * @return [ radian | theta | phi | target radial vel with respect to radar in frame {R} ]
          *
          * 	\begin{equation}
          *  {^{b_0}\boldsymbol{p}_t}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}+{^{b_0}\boldsymbol{p}_{b}(\tau)}
@@ -155,11 +156,12 @@ namespace ns_ctraj {
         Eigen::Vector4d RadarStaticMeasurement(double t, const Eigen::Vector3d &tarInRef) {
             const auto SE3_RefToCur = this->Pose(t).inverse();
             const auto SO3_RefToCur = SE3_RefToCur.so3();
-            Eigen::Vector3d VEL_tarToCurInCur =
-                    Sophus::SO3d::hat(SE3_RefToCur * tarInRef) * (SO3_RefToCur * AngularVeloInRef(t)) -
-                    SO3_RefToCur * LinearVeloInRef(t);
-            double radialVel = VEL_tarToCurInCur.dot(tarInRef.normalized());
-            return {tarInRef(0), tarInRef(1), tarInRef(2), radialVel};
+            Eigen::Vector3d tarInCur = SE3_RefToCur * tarInRef;
+            Eigen::Vector3d VEL_tarToCurInCur = Sophus::SO3d::hat(tarInCur) * (SO3_RefToCur * AngularVeloInRef(t)) -
+                                                SO3_RefToCur * LinearVeloInRef(t);
+            const Eigen::Vector3d rtp = XYZtoRTP(tarInCur);
+            const double radialVel = VEL_tarToCurInCur.dot(tarInRef.normalized());
+            return {rtp(0), rtp(1), rtp(2), radialVel};
         }
 
     public:
