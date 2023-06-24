@@ -119,6 +119,49 @@ namespace ns_ctraj {
             return angularAcceInRef;
         }
 
+        /**
+         * @return [ x | y | z | target radial vel with respect to radar in frame {R} ]
+         *
+         * 	\begin{equation}
+         *  {^{b_0}\boldsymbol{p}_t}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}+{^{b_0}\boldsymbol{p}_{b}(\tau)}
+         *  \end{equation}
+         *  \begin{equation}
+         *  {^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
+         *  -\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}}
+         *  \cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+         *  +{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\dot{\boldsymbol{p}}_t(\tau)}
+         *  +{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
+         *  \end{equation}
+         *  \begin{equation}
+         *  {^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
+         *  -{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
+         *  \cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+         *  +{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\dot{\boldsymbol{p}}_t(\tau)}
+         *  +{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
+         *  \end{equation}
+         *  \begin{equation}
+         *  {^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
+         *  -\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
+         *  \cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+         *  +{^{b}\dot{\boldsymbol{p}}_t(\tau)}
+         *  +{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
+         *  \end{equation}
+         *  \begin{equation}
+         *  {^{b}\dot{\boldsymbol{p}}_t(\tau)}=\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
+         *  \cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+         *  -{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
+         *  \end{equation}
+         */
+        Eigen::Vector4d RadarStaticMeasurement(double t, const Eigen::Vector3d &tarInRef) {
+            const auto SE3_RefToCur = this->Pose(t).inverse();
+            const auto SO3_RefToCur = SE3_RefToCur.so3();
+            Eigen::Vector3d VEL_tarToCurInCur =
+                    Sophus::SO3d::hat(SE3_RefToCur * tarInRef) * (SO3_RefToCur * AngularVeloInRef(t)) -
+                    SO3_RefToCur * LinearVeloInRef(t);
+            double radialVel = VEL_tarToCurInCur.dot(tarInRef.normalized());
+            return {tarInRef(0), tarInRef(1), tarInRef(2), radialVel};
+        }
+
     public:
         void Save(const std::string &filename) const {
             std::ofstream file(filename);
