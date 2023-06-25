@@ -111,11 +111,17 @@ namespace Eigen {
 
 #define DEF_EIGEN_VEC(DIME) \
     template<typename T>    \
-    using Vector##DIME = Eigen::Matrix<T, DIME, 1, 0>;
+    using Vector##DIME = Eigen::Matrix<T, DIME, 1>;
 
 #define DEF_EIGEN_MAT(ROW, COL) \
     template<typename T>        \
-    using Matrix##ROW##COL = Eigen::Matrix<T, ROW, COL, 0>;
+    using Matrix##ROW##COL = Eigen::Matrix<T, ROW, COL>;
+
+#define DEF_EIGEN_VEC_T(DIME, SYMBOL, TYPE) \
+    using Vector##DIME##SYMBOL = Eigen::Matrix<TYPE, DIME, 1>;
+
+#define DEF_EIGEN_MAT_T(ROW, COL, SYMBOL, TYPE) \
+    using Matrix##ROW##COL##SYMBOL = Eigen::Matrix<TYPE, ROW, COL>;
 
     DEF_EIGEN_VEC(1)
     DEF_EIGEN_VEC(2)
@@ -136,5 +142,55 @@ namespace Eigen {
     DEF_EIGEN_MAT(7, 7)
     DEF_EIGEN_MAT(8, 8)
     DEF_EIGEN_MAT(9, 9)
+
+    DEF_EIGEN_VEC_T(1, f, float)
+    DEF_EIGEN_VEC_T(2, f, float)
+    DEF_EIGEN_VEC_T(3, f, float)
+    DEF_EIGEN_VEC_T(4, f, float)
+    DEF_EIGEN_VEC_T(5, f, float)
+    DEF_EIGEN_VEC_T(6, f, float)
+    DEF_EIGEN_VEC_T(7, f, float)
+    DEF_EIGEN_VEC_T(8, f, float)
+    DEF_EIGEN_VEC_T(9, f, float)
+
+    DEF_EIGEN_VEC_T(1, d, double)
+    DEF_EIGEN_VEC_T(2, d, double)
+    DEF_EIGEN_VEC_T(3, d, double)
+    DEF_EIGEN_VEC_T(4, d, double)
+    DEF_EIGEN_VEC_T(5, d, double)
+    DEF_EIGEN_VEC_T(6, d, double)
+    DEF_EIGEN_VEC_T(7, d, double)
+    DEF_EIGEN_VEC_T(8, d, double)
+    DEF_EIGEN_VEC_T(9, d, double)
+
+    DEF_EIGEN_MAT(1, 1)
+    DEF_EIGEN_MAT(2, 2)
+    DEF_EIGEN_MAT(3, 3)
+    DEF_EIGEN_MAT(4, 4)
+    DEF_EIGEN_MAT(5, 5)
+    DEF_EIGEN_MAT(6, 6)
+    DEF_EIGEN_MAT(7, 7)
+    DEF_EIGEN_MAT(8, 8)
+    DEF_EIGEN_MAT(9, 9)
+
+    DEF_EIGEN_MAT_T(1, 1, f, float)
+    DEF_EIGEN_MAT_T(2, 2, f, float)
+    DEF_EIGEN_MAT_T(3, 3, f, float)
+    DEF_EIGEN_MAT_T(4, 4, f, float)
+    DEF_EIGEN_MAT_T(5, 5, f, float)
+    DEF_EIGEN_MAT_T(6, 6, f, float)
+    DEF_EIGEN_MAT_T(7, 7, f, float)
+    DEF_EIGEN_MAT_T(8, 8, f, float)
+    DEF_EIGEN_MAT_T(9, 9, f, float)
+
+    DEF_EIGEN_MAT_T(1, 1, d, double)
+    DEF_EIGEN_MAT_T(2, 2, d, double)
+    DEF_EIGEN_MAT_T(3, 3, d, double)
+    DEF_EIGEN_MAT_T(4, 4, d, double)
+    DEF_EIGEN_MAT_T(5, 5, d, double)
+    DEF_EIGEN_MAT_T(6, 6, d, double)
+    DEF_EIGEN_MAT_T(7, 7, d, double)
+    DEF_EIGEN_MAT_T(8, 8, d, double)
+    DEF_EIGEN_MAT_T(9, 9, d, double)
 
 }  // namespace Eigen
