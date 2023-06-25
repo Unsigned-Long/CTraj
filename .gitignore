@@ -3,3 +3,16 @@
 /build/
 .idea
 /thirdparty/tiny-viewer-build/
+
+*.pdf
+*.dtmp
+*.bkp
+*.log
+*.out
+*.lof
+*.bbl
+*.blg
+*.aux
+*.lot
+*.gz
+*.toc
