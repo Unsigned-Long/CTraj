@@ -122,36 +122,7 @@ namespace ns_ctraj {
 
         /**
          * @return [ radian | theta | phi | target radial vel with respect to radar in frame {R} ]
-         *
-         * 	\begin{equation}
-         *  {^{b_0}\boldsymbol{p}_t}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}+{^{b_0}\boldsymbol{p}_{b}(\tau)}
-         *  \end{equation}
-         *  \begin{equation}
-         *  {^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
-         *  -\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}}
-         *  \cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
-         *  +{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\dot{\boldsymbol{p}}_t(\tau)}
-         *  +{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
-         *  \end{equation}
-         *  \begin{equation}
-         *  {^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
-         *  -{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
-         *  \cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
-         *  +{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\dot{\boldsymbol{p}}_t(\tau)}
-         *  +{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
-         *  \end{equation}
-         *  \begin{equation}
-         *  {^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
-         *  -\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
-         *  \cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
-         *  +{^{b}\dot{\boldsymbol{p}}_t(\tau)}
-         *  +{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
-         *  \end{equation}
-         *  \begin{equation}
-         *  {^{b}\dot{\boldsymbol{p}}_t(\tau)}=\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
-         *  \cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
-         *  -{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
-         *  \end{equation}
+         * @attention the continuous-time trajectory is actually the one of the radar
          */
         Eigen::Vector4d RadarStaticMeasurement(double t, const Eigen::Vector3d &tarInRef) {
             const auto SE3_RefToCur = this->Pose(t).inverse();
@@ -160,7 +131,32 @@ namespace ns_ctraj {
             Eigen::Vector3d VEL_tarToCurInCur = Sophus::SO3d::hat(tarInCur) * (SO3_RefToCur * AngularVeloInRef(t)) -
                                                 SO3_RefToCur * LinearVeloInRef(t);
             const Eigen::Vector3d rtp = XYZtoRTP(tarInCur);
-            const double radialVel = VEL_tarToCurInCur.dot(tarInRef.normalized());
+            const double radialVel = -VEL_tarToCurInCur.dot(tarInRef.normalized());
+            return {rtp(0), rtp(1), rtp(2), radialVel};
+        }
+
+        /**
+         * @return [ radian | theta | phi | target radial vel with respect to radar in frame {R} ]
+         * @attention The continuous-time trajectory is the one of other sensor (e.g., IMU)
+         */
+        Eigen::Vector4d
+        RadarStaticMeasurement(double t, const Eigen::Vector3d &tarInRef, const Sophus::SE3d &SE3Bias_RtoI) {
+            const auto SE3_CurToRef = this->Pose(t);
+            const auto SO3_RefToCur = SE3_CurToRef.inverse().so3();
+            Eigen::Vector3d tarInR = (SE3_CurToRef * SE3Bias_RtoI).inverse() * tarInRef;
+
+            auto SO3_ItoR = SE3Bias_RtoI.so3().inverse();
+            auto POS_RinI = SE3Bias_RtoI.translation();
+            Eigen::Vector3d ANG_VEL_CurToRefInRef = this->AngularVeloInRef(t);
+
+            Eigen::Vector3d v1 = Sophus::SO3d::hat(tarInR) * (SO3_ItoR * SO3_RefToCur * ANG_VEL_CurToRefInRef);
+            Eigen::Vector3d v2 = SO3_ItoR * (Sophus::SO3d::hat(POS_RinI) * (SO3_RefToCur * ANG_VEL_CurToRefInRef));
+            Eigen::Vector3d v3 = SO3_ItoR * SO3_RefToCur * this->LinearVeloInRef(t);
+
+            const Eigen::Vector3d rtp = XYZtoRTP(tarInR);
+            Eigen::Vector3d VEL_tarToRInR = v1 + v2 - v3;
+
+            const double radialVel = -VEL_tarToRInR.dot(tarInRef.normalized());
             return {rtp(0), rtp(1), rtp(2), radialVel};
         }
 
