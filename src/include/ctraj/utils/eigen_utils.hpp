@@ -109,5 +109,32 @@ namespace Eigen {
         return eigenVec;
     }
 
+#define DEF_EIGEN_VEC(DIME) \
+    template<typename T>    \
+    using Vector##DIME = Eigen::Matrix<T, DIME, 1, 0>;
+
+#define DEF_EIGEN_MAT(ROW, COL) \
+    template<typename T>        \
+    using Matrix##ROW##COL = Eigen::Matrix<T, ROW, COL, 0>;
+
+    DEF_EIGEN_VEC(1)
+    DEF_EIGEN_VEC(2)
+    DEF_EIGEN_VEC(3)
+    DEF_EIGEN_VEC(4)
+    DEF_EIGEN_VEC(5)
+    DEF_EIGEN_VEC(6)
+    DEF_EIGEN_VEC(7)
+    DEF_EIGEN_VEC(8)
+    DEF_EIGEN_VEC(9)
+
+    DEF_EIGEN_MAT(1, 1)
+    DEF_EIGEN_MAT(2, 2)
+    DEF_EIGEN_MAT(3, 3)
+    DEF_EIGEN_MAT(4, 4)
+    DEF_EIGEN_MAT(5, 5)
+    DEF_EIGEN_MAT(6, 6)
+    DEF_EIGEN_MAT(7, 7)
+    DEF_EIGEN_MAT(8, 8)
+    DEF_EIGEN_MAT(9, 9)
 
 }  // namespace Eigen
