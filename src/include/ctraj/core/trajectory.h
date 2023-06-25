@@ -131,7 +131,7 @@ namespace ns_ctraj {
             Eigen::Vector3d VEL_tarToCurInCur = Sophus::SO3d::hat(tarInCur) * (SO3_RefToCur * AngularVeloInRef(t)) -
                                                 SO3_RefToCur * LinearVeloInRef(t);
             const Eigen::Vector3d rtp = XYZtoRTP(tarInCur);
-            const double radialVel = -VEL_tarToCurInCur.dot(tarInRef.normalized());
+            const double radialVel = -VEL_tarToCurInCur.dot(tarInCur.normalized());
             return {rtp(0), rtp(1), rtp(2), radialVel};
         }
 
@@ -156,7 +156,7 @@ namespace ns_ctraj {
             const Eigen::Vector3d rtp = XYZtoRTP(tarInR);
             Eigen::Vector3d VEL_tarToRInR = v1 + v2 - v3;
 
-            const double radialVel = -VEL_tarToRInR.dot(tarInRef.normalized());
+            const double radialVel = -VEL_tarToRInR.dot(tarInR.normalized());
             return {rtp(0), rtp(1), rtp(2), radialVel};
         }
 
