@@ -164,6 +164,33 @@ namespace ns_ctraj {
             return {rtp(0), rtp(1), rtp(2), radialVel};
         }
 
+        // -----------------
+        // operator overload
+        // -----------------
+        Trajectory operator*(const Sophus::SE3d &pose) const {
+            Trajectory newTraj = *this;
+            for (int i = 0; i < newTraj.NumKnots(); ++i) {
+                newTraj.SetKnot(newTraj.GetKnot(i) * pose, i);
+            }
+            return newTraj;
+        }
+
+        Trajectory operator!() const {
+            Trajectory newTraj = *this;
+            for (int i = 0; i < newTraj.NumKnots(); ++i) {
+                newTraj.SetKnot(newTraj.GetKnot(i).inverse(), i);
+            }
+            return newTraj;
+        }
+
+        friend Trajectory operator*(const Sophus::SE3d &pose, const Trajectory &simuTrajectory) {
+            Trajectory newTraj = simuTrajectory;
+            for (int i = 0; i < newTraj.NumKnots(); ++i) {
+                newTraj.SetKnot(pose * newTraj.GetKnot(i), i);
+            }
+            return newTraj;
+        }
+
     public:
         void Save(const std::string &filename) const {
             std::ofstream file(filename);
