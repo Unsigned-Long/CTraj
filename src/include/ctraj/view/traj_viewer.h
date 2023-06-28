@@ -17,6 +17,8 @@ namespace ns_ctraj {
         using Ptr = std::shared_ptr<Viewer>;
         using parent_type = ns_viewer::Viewer;
 
+        using parent_type::parent_type;
+
         explicit Viewer(const std::string &saveDir = "", const std::string &winName = "") :
                 parent_type(ns_viewer::ViewerConfigor(winName).WithScreenShotSaveDir(saveDir)) {
         }
