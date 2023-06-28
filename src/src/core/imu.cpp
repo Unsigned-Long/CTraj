@@ -37,7 +37,7 @@ namespace ns_ctraj {
         _timestamp = timestamp;
     }
 
-    bool IMUFrame::SaveFramesToDisk(const std::string &filename, const Eigen::aligned_vector<IMUFrame::Ptr> &frames,
+    bool IMUFrame::SaveFramesToDisk(const std::string &filename, const std::vector<IMUFrame::Ptr> &frames,
                                     int precision) {
         std::ofstream file(filename);
         file << std::fixed << std::setprecision(precision);

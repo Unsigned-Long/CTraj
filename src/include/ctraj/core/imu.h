@@ -55,7 +55,7 @@ namespace ns_ctraj {
 
         // save imu frames sequence to disk
         static bool SaveFramesToDisk(
-                const std::string &filename, const Eigen::aligned_vector<IMUFrame::Ptr> &frames, int precision = 10
+                const std::string &filename, const std::vector<IMUFrame::Ptr> &frames, int precision = 10
         );
 
     public:

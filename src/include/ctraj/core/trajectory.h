@@ -62,7 +62,7 @@ namespace ns_ctraj {
             viewer.ShowPoseSequence(this->Sampling(trajSamplingTimeDis));
         }
 
-        Eigen::aligned_vector<IMUFrame::Ptr>
+        std::vector<IMUFrame::Ptr>
         ComputeIMUMeasurement(const Eigen::Vector3d &gravityInRef, double timeDis = INVALID_TIME_STAMP,
                               double sTime = INVALID_TIME_STAMP, double eTime = INVALID_TIME_STAMP) {
             if (timeDis < 0.0) {
@@ -74,7 +74,7 @@ namespace ns_ctraj {
             if (eTime < 0.0 || eTime > this->MaxTime()) {
                 eTime = this->MaxTime();
             }
-            Eigen::aligned_vector<IMUFrame::Ptr> measurementVec;
+            std::vector<IMUFrame::Ptr> measurementVec;
             const auto &so3Spline = this->GetSo3Spline();
             const auto &posSpline = this->GetPosSpline();
             for (double t = sTime; t < eTime;) {
