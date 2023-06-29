@@ -122,41 +122,22 @@ namespace ns_ctraj {
 
         /**
          * @return [ radian | theta | phi | target radial vel with respect to radar in frame {R} ]
-         * @attention the continuous-time trajectory is actually the one of the radar
-         */
-        Eigen::Vector4d RadarStaticMeasurement(double t, const Eigen::Vector3d &tarInRef) {
-            const auto SE3_RefToCur = this->Pose(t).inverse();
-            const auto SO3_RefToCur = SE3_RefToCur.so3();
-            Eigen::Vector3d tarInCur = SE3_RefToCur * tarInRef;
-            Eigen::Vector3d VEL_tarToCurInCur = Sophus::SO3d::hat(tarInCur) * (SO3_RefToCur * AngularVeloInRef(t)) -
-                                                SO3_RefToCur * LinearVeloInRef(t);
-            const Eigen::Vector3d rtp = XYZtoRTP(tarInCur);
-            const double radialVel = -VEL_tarToCurInCur.dot(tarInCur.normalized());
-            return {rtp(0), rtp(1), rtp(2), radialVel};
-        }
-
-        /**
-         * @return [ radian | theta | phi | target radial vel with respect to radar in frame {R} ]
          * @attention The continuous-time trajectory is the one of other sensor (e.g., IMU)
          */
         Eigen::Vector4d
         RadarStaticMeasurement(double t, const Eigen::Vector3d &tarInRef, const Sophus::SE3d &SE3Bias_RtoI) {
             const auto SE3_CurToRef = this->Pose(t);
-            const auto SO3_RefToCur = SE3_CurToRef.inverse().so3();
-            Eigen::Vector3d tarInR = (SE3_CurToRef * SE3Bias_RtoI).inverse() * tarInRef;
+            Sophus::SE3d SE3_RefToR = (SE3_CurToRef * SE3Bias_RtoI).inverse();
+            Eigen::Vector3d tarInR = SE3_RefToR * tarInRef;
 
-            auto SO3_ItoR = SE3Bias_RtoI.so3().inverse();
-            auto POS_RinI = SE3Bias_RtoI.translation();
-            Eigen::Vector3d ANG_VEL_CurToRefInRef = this->AngularVeloInRef(t);
-
-            Eigen::Vector3d v1 = Sophus::SO3d::hat(tarInR) * (SO3_ItoR * SO3_RefToCur * ANG_VEL_CurToRefInRef);
-            Eigen::Vector3d v2 = SO3_ItoR * (Sophus::SO3d::hat(POS_RinI) * (SO3_RefToCur * ANG_VEL_CurToRefInRef));
-            Eigen::Vector3d v3 = SO3_ItoR * SO3_RefToCur * this->LinearVeloInRef(t);
+            Eigen::Vector3d v1 = -Sophus::SO3d::hat(SE3_CurToRef.so3() * SE3Bias_RtoI.translation()) *
+                                 this->AngularVeloInRef(t);
+            Eigen::Vector3d v2 = this->LinearVeloInRef(t);
+            Eigen::Vector3d LIN_VEL_RtoB0InR = SE3_RefToR.so3() * (v1 + v2);
 
             const Eigen::Vector3d rtp = XYZtoRTP(tarInR);
-            Eigen::Vector3d VEL_tarToRInR = v1 + v2 - v3;
+            const double radialVel = -LIN_VEL_RtoB0InR.dot(tarInR.normalized());
 
-            const double radialVel = -VEL_tarToRInR.dot(tarInR.normalized());
             return {rtp(0), rtp(1), rtp(2), radialVel};
         }
 
