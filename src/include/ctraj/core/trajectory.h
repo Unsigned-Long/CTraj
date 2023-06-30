@@ -33,7 +33,8 @@ namespace ns_ctraj {
         }
 
         bool TimeStampInRange(double timeStamp) {
-            return timeStamp >= this->MinTime() && timeStamp <= this->MaxTime();
+            // left closed right open interval
+            return timeStamp >= this->MinTime() && timeStamp < this->MaxTime();
         }
 
         Eigen::aligned_vector<Posed> Sampling(double timeDis = INVALID_TIME_STAMP, double sTime = INVALID_TIME_STAMP,

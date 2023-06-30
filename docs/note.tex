@@ -86,61 +86,7 @@
 	\pagenumbering{arabic}
 	
 	
-	\section{\normf{Radar Static Measurement (Without Bias)}}
-	\begin{enumerate}
-		\item $\{t\}$: the static target
-		
-		\item $\{b\}$: the body frame
-		
-		\item $\{b_0\}$: the first body frame
-		
-		\item $\tau$: the time
-		
-		\item $r,\theta,\phi,v_r$: the range, azimuth, elevation, and radial velocity respectively of the target with respect to the radar.
-	\end{enumerate}
-	The continuous-time trajectory is actually the one of the radar, we have:
-	\begin{equation}
-	v_r=-{^{b}\dot{\boldsymbol{p}}^\top_t(\tau)}\cdot\begin{pmatrix}
-	\cos \theta\cos\phi
-	\\
-	\sin\theta\cos\phi
-	\\
-	\sin\phi
-	\end{pmatrix}
-	\end{equation}
-	with
-	\begin{equation}
-	{^{b_0}\boldsymbol{p}_t}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}+{^{b_0}\boldsymbol{p}_{b}(\tau)}
-	\end{equation}
-	\begin{equation}
-	{^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
-	-\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}}
-	\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
-	+{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\dot{\boldsymbol{p}}_t(\tau)}
-	+{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
-	\end{equation}
-	\begin{equation}
-	{^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
-	-{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
-	\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
-	+{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\dot{\boldsymbol{p}}_t(\tau)}
-	+{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
-	\end{equation}
-	\begin{equation}
-	{^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
-	-\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
-	\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
-	+{^{b}\dot{\boldsymbol{p}}_t(\tau)}
-	+{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
-	\end{equation}
-	\begin{equation}
-	{^{b}\dot{\boldsymbol{p}}_t(\tau)}=\liehat{{^{b}\boldsymbol{p}_t(\tau)}}
-	\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
-	-{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
-	\end{equation}
-	
-	
-	\section{\normf{Radar Static Measurement (With Bias)}}
+	\section{\normf{Radar Static Measurement (V1)}}
 	The continuous-time trajectory is the one of other sensor (e.g., IMU), we have:
 	\begin{equation}
 	{^{b_0}\boldsymbol{p}_t}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}+{^{b_0}\boldsymbol{p}_{b}(\tau)}
@@ -177,7 +123,7 @@
 	-{^{b}_{r}\boldsymbol{R}^\top}\cdot\liehat{{^{b}\boldsymbol{p}_{r}}}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
 	+{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
 	\end{equation}
-	thus
+	thus, the velocity of target $\{t\}$ with respect to the radar $\{r\}$ parameterized in $\{r\}$ could be expressed as:
 	\begin{equation}
 	{^{r}\dot{\boldsymbol{p}}_t(\tau)}=
 	\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
@@ -185,6 +131,27 @@
 	-{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
 	\end{equation}
 	
+	\section{\normf{Radar Static Measurement (V2)}}
+	\begin{equation}
+	{^{b_0}{\boldsymbol{p}}_r(\tau)}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}{\boldsymbol{p}}_r}+{^{b_0}{\boldsymbol{p}}_b(\tau)}
+	\end{equation}
+	\begin{equation}
+	{^{b_0}\dot{\boldsymbol{p}}_r(\tau)}=-\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}{\boldsymbol{p}}_r}}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b_0}\dot{\boldsymbol{p}}_b(\tau)}
+	\end{equation}
+	thus, the velocity of radar $\{r\}$ with respect to the frame $\{b_0\}$ parameterized in $\{r\}$ could be expressed as:
+	\begin{equation}
+	{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top}\cdot{^{b_0}\dot{\boldsymbol{p}}_r(\tau)}=
+	{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top}\cdot
+	\left(
+	-\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}{\boldsymbol{p}}_r}}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b_0}\dot{\boldsymbol{p}}_b(\tau)}
+	\right) 
+	\end{equation}
+	actually, by introducing $\liehat{{^{r}\boldsymbol{p}_t(\tau)}}$, we have:
+	\begin{equation}
+	\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top}\cdot{^{b_0}\dot{\boldsymbol{p}}_r(\tau)}=-\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{r}\dot{\boldsymbol{p}}_t(\tau)}
+	\end{equation}
 	
 	
 	
