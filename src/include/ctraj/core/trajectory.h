@@ -89,6 +89,42 @@ namespace ns_ctraj {
             return measurementVec;
         }
 
+        std::vector<IMUFrame::Ptr>
+        ComputeIMUMeasurement(const Eigen::Vector3d &gravityInRef, const Sophus::SE3d &SE3Bias_NewToCur,
+                              double timeDis = INVALID_TIME_STAMP, double sTime = INVALID_TIME_STAMP,
+                              double eTime = INVALID_TIME_STAMP) {
+            if (timeDis < 0.0) {
+                timeDis = this->GetDt();
+            }
+            if (sTime < 0.0 || sTime > this->MaxTime()) {
+                sTime = this->MinTime();
+            }
+            if (eTime < 0.0 || eTime > this->MaxTime()) {
+                eTime = this->MaxTime();
+            }
+            std::vector<IMUFrame::Ptr> measurementVec;
+            for (double t = sTime; t < eTime;) {
+                auto SE3_CurToRef = this->Pose(t);
+                Eigen::Vector3d SO3_VEL_CurToRefInRef = this->AngularVeloInRef(t);
+                Eigen::Vector3d SO3_ACCE_CurToRefInRef = this->AngularAcceInRef(t);
+                Eigen::Vector3d POS_ACCE_CurToRefInRef = this->LinearAcceInRef(t);
+
+                Sophus::SE3d SE3_NewToRef = SE3_CurToRef * SE3Bias_NewToCur;
+
+                Eigen::Vector3d POS_ACCE_NewToRefInRef =
+                        -Sophus::SO3d::hat(SE3_CurToRef.so3() * SE3Bias_NewToCur.translation()) * SO3_ACCE_CurToRefInRef
+                        + POS_ACCE_CurToRefInRef - Sophus::SO3d::hat(SO3_VEL_CurToRefInRef) * Sophus::SO3d::hat(
+                                SE3_CurToRef.so3() * SE3Bias_NewToCur.translation()) * SO3_VEL_CurToRefInRef;
+
+                Eigen::Vector3d acce = SE3_NewToRef.so3().inverse() * (POS_ACCE_NewToRefInRef - gravityInRef);
+                Eigen::Vector3d gyro = SE3_NewToRef.so3().inverse() * SO3_VEL_CurToRefInRef;
+
+                measurementVec.push_back(IMUFrame::Create(t, gyro, acce));
+                t += timeDis;
+            }
+            return measurementVec;
+        }
+
         Eigen::Vector3d LinearAcceInRef(double t) {
             if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
             const auto &posSpline = this->GetPosSpline();
