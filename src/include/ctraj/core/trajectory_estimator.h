@@ -6,6 +6,7 @@
 #define CTRAJ_TRAJECTORY_ESTIMATOR_H
 
 #include <utility>
+#include "thread"
 
 #include "ctraj/core/imu.h"
 #include "ctraj/core/pose.hpp"
@@ -15,10 +16,14 @@
 #include "ceres/manifold.h"
 #include "ceres/ceres.h"
 
-#include "ctraj/factors/se3_functor.hpp"
-#include "ctraj/factors/so3_functor.hpp"
-#include "ctraj/factors/pos_functor.hpp"
-#include "thread"
+#include "ctraj/factors/se3_factor.hpp"
+#include "ctraj/factors/so3_factor.hpp"
+#include "ctraj/factors/pos_factor.hpp"
+#include "ctraj/factors/multi_imu_acce_factor.hpp"
+#include "ctraj/factors/multi_imu_gyro_factor.hpp"
+#include "ctraj/factors/imu_acce_factor.hpp"
+#include "ctraj/factors/imu_gyro_factor.hpp"
+#include "ctraj/factors/centralization_factor.hpp"
 
 namespace ns_ctraj {
 
