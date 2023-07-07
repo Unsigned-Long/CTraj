@@ -5,7 +5,8 @@
 #ifndef CTRAJ_MULTI_IMU_ACCE_FACTOR_HPP
 #define CTRAJ_MULTI_IMU_ACCE_FACTOR_HPP
 
-#include "ctraj/factors/functor_typedef.hpp"
+#include "ctraj/utils/eigen_utils.hpp"
+#include "ctraj/utils/sophus_utils.hpp"
 #include "ctraj/core/imu.h"
 
 namespace ns_ctraj {
@@ -54,7 +55,7 @@ namespace ns_ctraj {
 
             // get value
             Eigen::Map<const Sophus::SO3<T>> SO3_BiToBc(sKnots[SO3_BiToBc_OFFSET]);
-            Eigen::Map<const ns_ctraj::Vector3<T>> POS_BiInBc(sKnots[POS_BiInBc_OFFSET]);
+            Eigen::Map<const Eigen::Vector3<T>> POS_BiInBc(sKnots[POS_BiInBc_OFFSET]);
             T TIME_OFFSET_BiToBc = sKnots[TIME_OFFSET_BiToBc_OFFSET][0];
 
             auto timeByBc = _imuFrame->GetTimestamp() + TIME_OFFSET_BiToBc;
@@ -67,49 +68,49 @@ namespace ns_ctraj {
             POS_offset = SO3_offset + _splineMeta.NumParameters();
 
             Sophus::SO3<T> SO3_BcToBc0;
-            ns_ctraj::SO3Tangent<T> SO3_VEL_BcToBc0InBc, SO3_ACCE_BcToBc0InBc;
+            Sophus::SO3Tangent<T> SO3_VEL_BcToBc0InBc, SO3_ACCE_BcToBc0InBc;
             ns_ctraj::CeresSplineHelperJet<T, Order>::template EvaluateLie(
                     sKnots + SO3_offset, pointIU.second, _dtInv,
                     &SO3_BcToBc0, &SO3_VEL_BcToBc0InBc, &SO3_ACCE_BcToBc0InBc
             );
-            ns_ctraj::SO3Tangent<T> SO3_VEL_BcToBc0InBc0 = SO3_BcToBc0 * SO3_VEL_BcToBc0InBc;
-            ns_ctraj::SO3Tangent<T> SO3_ACCE_BcToBc0InBc0 = SO3_BcToBc0 * SO3_ACCE_BcToBc0InBc;
+            Sophus::SO3Tangent<T> SO3_VEL_BcToBc0InBc0 = SO3_BcToBc0 * SO3_VEL_BcToBc0InBc;
+            Sophus::SO3Tangent<T> SO3_ACCE_BcToBc0InBc0 = SO3_BcToBc0 * SO3_ACCE_BcToBc0InBc;
 
             /**
              * @attention: current R^3 trajectory is the velocity b-spline, whose
              * first order derivative is the linear acceleration, not the second order derivative!!!
              */
-            ns_ctraj::Vector3<T> POS_ACCE_BcToBc0InBc0;
+            Eigen::Vector3<T> POS_ACCE_BcToBc0InBc0;
             ns_ctraj::CeresSplineHelperJet<T, Order>::template Evaluate<3, 1>(
                     sKnots + POS_offset, pointIU.second, _dtInv, &POS_ACCE_BcToBc0InBc0
             );
 
-            Eigen::Map<const ns_ctraj::Vector3<T>> acceBias(sKnots[ACCE_BIAS_OFFSET]);
-            Eigen::Map<const ns_ctraj::Vector3<T>> gravity(sKnots[GRAVITY_OFFSET]);
+            Eigen::Map<const Eigen::Vector3<T>> acceBias(sKnots[ACCE_BIAS_OFFSET]);
+            Eigen::Map<const Eigen::Vector3<T>> gravity(sKnots[GRAVITY_OFFSET]);
 
             auto acceCoeff = sKnots[ACCE_MAP_COEFF_OFFSET];
 
-            ns_ctraj::Matrix3<T> acceMapMat = ns_ctraj::Matrix3<T>::Zero();
+            Eigen::Matrix33<T> acceMapMat = Eigen::Matrix33<T>::Zero();
 
-            acceMapMat.diagonal() = Eigen::Map<const ns_ctraj::Vector3<T>>(acceCoeff, 3);
+            acceMapMat.diagonal() = Eigen::Map<const Eigen::Vector3<T>>(acceCoeff, 3);
             acceMapMat(0, 1) = *(acceCoeff + 3);
             acceMapMat(0, 2) = *(acceCoeff + 4);
             acceMapMat(1, 2) = *(acceCoeff + 5);
 
             Sophus::SO3<T> SO3_BiToBc0 = SO3_BcToBc0 * SO3_BiToBc;
-            ns_ctraj::Vector3<T> POS_ACCE_BiToBc0InBc0 =
+            Eigen::Vector3<T> POS_ACCE_BiToBc0InBc0 =
                     -Sophus::SO3<T>::hat(SO3_BcToBc0 * POS_BiInBc) * SO3_ACCE_BcToBc0InBc0 +
                     POS_ACCE_BcToBc0InBc0 - Sophus::SO3<T>::hat(SO3_VEL_BcToBc0InBc0) *
                                             Sophus::SO3<T>::hat(SO3_BcToBc0 * POS_BiInBc) *
                                             SO3_VEL_BcToBc0InBc0;
 
-            ns_ctraj::Vector3<T> accePred =
+            Eigen::Vector3<T> accePred =
                     (acceMapMat * (SO3_BiToBc0.inverse() * (POS_ACCE_BiToBc0InBc0 - gravity))).eval() + acceBias;
 
 
-            ns_ctraj::Vector3<T> acceResiduals = accePred - _imuFrame->GetAcce().template cast<T>();
+            Eigen::Vector3<T> acceResiduals = accePred - _imuFrame->GetAcce().template cast<T>();
 
-            Eigen::Map<ns_ctraj::Vector3<T>> residuals(sResiduals);
+            Eigen::Map<Eigen::Vector3<T>> residuals(sResiduals);
             residuals = T(_acceWeight) * acceResiduals;
 
             return true;

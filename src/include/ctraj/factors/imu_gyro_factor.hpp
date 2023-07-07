@@ -5,7 +5,8 @@
 #ifndef CTRAJ_IMU_GYRO_FACTOR_HPP
 #define CTRAJ_IMU_GYRO_FACTOR_HPP
 
-#include "ctraj/factors/functor_typedef.hpp"
+#include "ctraj/utils/eigen_utils.hpp"
+#include "ctraj/utils/sophus_utils.hpp"
 #include "ctraj/core/imu.h"
 
 namespace ns_ctraj {
@@ -50,22 +51,22 @@ namespace ns_ctraj {
             std::size_t GYRO_MAP_COEFF_OFFSET = GYRO_BIAS_OFFSET + 1;
             std::size_t SO3_AtoG_OFFSET = GYRO_MAP_COEFF_OFFSET + 1;
 
-            ns_ctraj::SO3Tangent<T> gyroVel;
+            Sophus::SO3Tangent<T> gyroVel;
             ns_ctraj::CeresSplineHelper<Order>::template EvaluateLie<T, Sophus::SO3>(
                     sKnots + SO3_OFFSET, u, _dtInv, nullptr, &gyroVel
             );
 
-            Eigen::Map<const ns_ctraj::Vector3<T>> gyroBias(sKnots[GYRO_BIAS_OFFSET]);
+            Eigen::Map<const Eigen::Vector3<T>> gyroBias(sKnots[GYRO_BIAS_OFFSET]);
             auto gyroCoeff = sKnots[GYRO_MAP_COEFF_OFFSET];
-            ns_ctraj::Matrix3<T> gyroMapMat = ns_ctraj::Matrix3<T>::Zero();
-            gyroMapMat.diagonal() = Eigen::Map<const ns_ctraj::Vector3<T>>(gyroCoeff, 3);
+            Eigen::Matrix33<T> gyroMapMat = Eigen::Matrix33<T>::Zero();
+            gyroMapMat.diagonal() = Eigen::Map<const Eigen::Vector3<T>>(gyroCoeff, 3);
             gyroMapMat(0, 1) = *(gyroCoeff + 3);
             gyroMapMat(0, 2) = *(gyroCoeff + 4);
             gyroMapMat(1, 2) = *(gyroCoeff + 5);
 
             Eigen::Map<Sophus::SO3<T> const> const SO3_AtoG(sKnots[SO3_AtoG_OFFSET]);
 
-            Eigen::Map<ns_ctraj::Vector3<T>> residuals(sResiduals);
+            Eigen::Map<Eigen::Vector3<T>> residuals(sResiduals);
             residuals = (gyroMapMat * (SO3_AtoG * gyroVel)).eval() + gyroBias - _imuFrame->GetGyro().template cast<T>();
             residuals = T(_gyroWeight) * residuals;
 

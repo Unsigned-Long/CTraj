@@ -5,7 +5,7 @@
 #ifndef CTRAJ_SO3_FACTOR_HPP
 #define CTRAJ_SO3_FACTOR_HPP
 
-#include "ctraj/factors/functor_typedef.hpp"
+#include "ctraj/utils/eigen_utils.hpp"
 
 namespace ns_ctraj {
     template<int Order>
@@ -50,7 +50,7 @@ namespace ns_ctraj {
                     sKnots + SO3_OFFSET, u, _dtInv, &predSO3ItoG
             );
 
-            Eigen::Map<Vector3<T>> so3Residuals(sResiduals);
+            Eigen::Map<Eigen::Vector3<T>> so3Residuals(sResiduals);
 
             so3Residuals = (predSO3ItoG * ItoG.so3.inverse().template cast<T>()).log();
 

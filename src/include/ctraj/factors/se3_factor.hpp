@@ -5,7 +5,7 @@
 #ifndef CTRAJ_SE3_FACTOR_HPP
 #define CTRAJ_SE3_FACTOR_HPP
 
-#include "ctraj/factors/functor_typedef.hpp"
+#include "ctraj/utils/eigen_utils.hpp"
 
 namespace ns_ctraj {
     template<int Order>
@@ -51,14 +51,14 @@ namespace ns_ctraj {
             CeresSplineHelper<Order>::template EvaluateLie<T, Sophus::SO3>(
                     sKnots + SO3_OFFSET, u, _dtInv, &predSO3ItoG
             );
-            Vector3<T> predPOSTtoG;
+            Eigen::Vector3<T> predPOSTtoG;
             // if 'DERIV = 0' returns value of the spline, otherwise corresponding derivative.
             CeresSplineHelper<Order>::template Evaluate<T, 3, 0>(
                     sKnots + POS_OFFSET, u, _dtInv, &predPOSTtoG
             );
 
-            Eigen::Map<Vector3<T>> so3Residuals(sResiduals);
-            Eigen::Map<Vector3<T>> poseResiduals(sResiduals + 3);
+            Eigen::Map<Eigen::Vector3<T>> so3Residuals(sResiduals);
+            Eigen::Map<Eigen::Vector3<T>> poseResiduals(sResiduals + 3);
 
             so3Residuals = (ItoG.so3.template cast<T>() * predSO3ItoG.inverse()).log();
             poseResiduals = predPOSTtoG - ItoG.t.template cast<T>();

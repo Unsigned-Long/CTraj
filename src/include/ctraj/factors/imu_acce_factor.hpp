@@ -5,7 +5,7 @@
 #ifndef CTRAJ_IMU_ACCE_FACTOR_HPP
 #define CTRAJ_IMU_ACCE_FACTOR_HPP
 
-#include "ctraj/factors/functor_typedef.hpp"
+#include "ctraj/utils/eigen_utils.hpp"
 #include "ctraj/core/imu.h"
 
 namespace ns_ctraj {
@@ -52,7 +52,7 @@ namespace ns_ctraj {
             std::size_t GRAVITY_OFFSET = ACCE_MAP_COEFF_OFFSET + 1;
 
             Sophus::SO3<T> so3;
-            ns_ctraj::SO3Tangent<T> so3Vel;
+            Sophus::SO3Tangent<T> so3Vel;
             ns_ctraj::CeresSplineHelper<Order>::template EvaluateLie<T, Sophus::SO3>(
                     sKnots + SO3_OFFSET, u, _dtInv, &so3, &so3Vel
             );
@@ -61,28 +61,28 @@ namespace ns_ctraj {
              * @attention: current R^3 trajectory is the velocity b-spline, whose
              * first order derivative is the linear acceleration, not the second order derivative!!!
              */
-            ns_ctraj::Vector3<T> posAccel;
+            Eigen::Vector3<T> posAccel;
             ns_ctraj::CeresSplineHelper<Order>::template Evaluate<T, 3, 1>(
                     sKnots + POS_OFFSET, u, _dtInv, &posAccel
             );
 
-            Eigen::Map<const ns_ctraj::Vector3<T>> acceBias(sKnots[ACCE_BIAS_OFFSET]);
-            Eigen::Map<const ns_ctraj::Vector3<T>> gravity(sKnots[GRAVITY_OFFSET]);
+            Eigen::Map<const Eigen::Vector3<T>> acceBias(sKnots[ACCE_BIAS_OFFSET]);
+            Eigen::Map<const Eigen::Vector3<T>> gravity(sKnots[GRAVITY_OFFSET]);
 
             auto acceCoeff = sKnots[ACCE_MAP_COEFF_OFFSET];
 
-            ns_ctraj::Matrix3<T> acceMapMat = ns_ctraj::Matrix3<T>::Zero();
+            Eigen::Matrix33<T> acceMapMat = Eigen::Matrix33<T>::Zero();
 
-            acceMapMat.diagonal() = Eigen::Map<const ns_ctraj::Vector3<T>>(acceCoeff, 3);
+            acceMapMat.diagonal() = Eigen::Map<const Eigen::Vector3<T>>(acceCoeff, 3);
             acceMapMat(0, 1) = *(acceCoeff + 3);
             acceMapMat(0, 2) = *(acceCoeff + 4);
             acceMapMat(1, 2) = *(acceCoeff + 5);
 
-            ns_ctraj::Vector3<T> accePred = (acceMapMat * (so3.inverse() * (posAccel - gravity))).eval() + acceBias;
+            Eigen::Vector3<T> accePred = (acceMapMat * (so3.inverse() * (posAccel - gravity))).eval() + acceBias;
 
-            ns_ctraj::Vector3<T> acceResiduals = accePred - _imuFrame->GetAcce().template cast<T>();
+            Eigen::Vector3<T> acceResiduals = accePred - _imuFrame->GetAcce().template cast<T>();
 
-            Eigen::Map<ns_ctraj::Vector3<T>> residuals(sResiduals);
+            Eigen::Map<Eigen::Vector3<T>> residuals(sResiduals);
             residuals = T(_acceWeight) * acceResiduals;
 
             return true;

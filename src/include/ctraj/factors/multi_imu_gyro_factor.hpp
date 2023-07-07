@@ -5,7 +5,8 @@
 #ifndef CTRAJ_MULTI_IMU_GYRO_FACTOR_HPP
 #define CTRAJ_MULTI_IMU_GYRO_FACTOR_HPP
 
-#include "ctraj/factors/functor_typedef.hpp"
+#include "ctraj/utils/eigen_utils.hpp"
+#include "ctraj/utils/sophus_utils.hpp"
 #include "ctraj/core/imu.h"
 
 namespace ns_ctraj {
@@ -60,15 +61,15 @@ namespace ns_ctraj {
             SO3_OFFSET = pointIU.first;
 
             Sophus::SO3<T> SO3_BcToBc0;
-            ns_ctraj::SO3Tangent<T> SO3_VEL_BcToBc0InBc;
+            Sophus::SO3Tangent<T> SO3_VEL_BcToBc0InBc;
             ns_ctraj::CeresSplineHelperJet<T, Order>::template EvaluateLie(
                     sKnots + SO3_OFFSET, pointIU.second, _dtInv, &SO3_BcToBc0, &SO3_VEL_BcToBc0InBc
             );
 
-            Eigen::Map<const ns_ctraj::Vector3<T>> gyroBias(sKnots[GYRO_BIAS_OFFSET]);
+            Eigen::Map<const Eigen::Vector3<T>> gyroBias(sKnots[GYRO_BIAS_OFFSET]);
             auto gyroCoeff = sKnots[GYRO_MAP_COEFF_OFFSET];
-            ns_ctraj::Matrix3<T> gyroMapMat = ns_ctraj::Matrix3<T>::Zero();
-            gyroMapMat.diagonal() = Eigen::Map<const ns_ctraj::Vector3<T>>(gyroCoeff, 3);
+            Eigen::Matrix33<T> gyroMapMat = Eigen::Matrix33<T>::Zero();
+            gyroMapMat.diagonal() = Eigen::Map<const Eigen::Vector3<T>>(gyroCoeff, 3);
             gyroMapMat(0, 1) = *(gyroCoeff + 3);
             gyroMapMat(0, 2) = *(gyroCoeff + 4);
             gyroMapMat(1, 2) = *(gyroCoeff + 5);
@@ -76,12 +77,12 @@ namespace ns_ctraj {
             Eigen::Map<Sophus::SO3<T> const> const SO3_AtoG(sKnots[SO3_AtoG_OFFSET]);
             Eigen::Map<Sophus::SO3<T> const> const SO3_BiToBc(sKnots[SO3_BiToBc_OFFSET]);
             Sophus::SO3<T> SO3_BiToBc0 = SO3_BcToBc0 * SO3_BiToBc;
-            ns_ctraj::SO3Tangent<T> SO3_VEL_BcToBc0InBc0 = SO3_BcToBc0 * SO3_VEL_BcToBc0InBc;
+            Sophus::SO3Tangent<T> SO3_VEL_BcToBc0InBc0 = SO3_BcToBc0 * SO3_VEL_BcToBc0InBc;
 
-            ns_ctraj::Vector3<T> pred =
+            Eigen::Vector3<T> pred =
                     (gyroMapMat * (SO3_AtoG * SO3_BiToBc0.inverse() * SO3_VEL_BcToBc0InBc0)).eval() + gyroBias;
 
-            Eigen::Map<ns_ctraj::Vector3<T>> residuals(sResiduals);
+            Eigen::Map<Eigen::Vector3<T>> residuals(sResiduals);
             residuals = pred - _imuFrame->GetGyro().template cast<T>();
             residuals = T(_gyroWeight) * residuals;
 

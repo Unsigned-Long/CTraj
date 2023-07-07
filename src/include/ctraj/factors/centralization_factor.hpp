@@ -5,26 +5,26 @@
 #ifndef CTRAJ_CENTRALIZATION_FACTOR_HPP
 #define CTRAJ_CENTRALIZATION_FACTOR_HPP
 
-#include "ctraj/factors/functor_typedef.hpp"
+#include "ctraj/utils/eigen_utils.hpp"
 
 namespace ns_ctraj {
-    struct SO3CentralizationFunctor {
+    struct SO3CentralizationFactor {
     private:
         std::size_t _blockSize;
         double _weight;
 
     public:
-        explicit SO3CentralizationFunctor(std::size_t blockSize, double weight)
+        explicit SO3CentralizationFactor(std::size_t blockSize, double weight)
                 : _blockSize(blockSize), _weight(weight) {}
 
         static auto Create(std::size_t blockSize, double weight) {
-            return new ceres::DynamicAutoDiffCostFunction<SO3CentralizationFunctor>(
-                    new SO3CentralizationFunctor(blockSize, weight)
+            return new ceres::DynamicAutoDiffCostFunction<SO3CentralizationFactor>(
+                    new SO3CentralizationFactor(blockSize, weight)
             );
         }
 
         static std::size_t TypeHashCode() {
-            return typeid(SO3CentralizationFunctor).hash_code();
+            return typeid(SO3CentralizationFactor).hash_code();
         }
 
     public:
@@ -52,23 +52,23 @@ namespace ns_ctraj {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
 
-    struct POSCentralizationFunctor {
+    struct POSCentralizationFactor {
     private:
         std::size_t _blockSize;
         double _weight;
 
     public:
-        explicit POSCentralizationFunctor(std::size_t blockSize, double weight)
+        explicit POSCentralizationFactor(std::size_t blockSize, double weight)
                 : _blockSize(blockSize), _weight(weight) {}
 
         static auto Create(std::size_t blockSize, double weight) {
-            return new ceres::DynamicAutoDiffCostFunction<POSCentralizationFunctor>(
-                    new POSCentralizationFunctor(blockSize, weight)
+            return new ceres::DynamicAutoDiffCostFunction<POSCentralizationFactor>(
+                    new POSCentralizationFactor(blockSize, weight)
             );
         }
 
         static std::size_t TypeHashCode() {
-            return typeid(POSCentralizationFunctor).hash_code();
+            return typeid(POSCentralizationFactor).hash_code();
         }
 
     public:
@@ -96,23 +96,23 @@ namespace ns_ctraj {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
 
-    struct TimeOffsetCentralizationFunctor {
+    struct TimeOffsetCentralizationFactor {
     private:
         std::size_t _blockSize;
         double _weight;
 
     public:
-        explicit TimeOffsetCentralizationFunctor(std::size_t blockSize, double weight)
+        explicit TimeOffsetCentralizationFactor(std::size_t blockSize, double weight)
                 : _blockSize(blockSize), _weight(weight) {}
 
         static auto Create(std::size_t blockSize, double weight) {
-            return new ceres::DynamicAutoDiffCostFunction<TimeOffsetCentralizationFunctor>(
-                    new TimeOffsetCentralizationFunctor(blockSize, weight)
+            return new ceres::DynamicAutoDiffCostFunction<TimeOffsetCentralizationFactor>(
+                    new TimeOffsetCentralizationFactor(blockSize, weight)
             );
         }
 
         static std::size_t TypeHashCode() {
-            return typeid(TimeOffsetCentralizationFunctor).hash_code();
+            return typeid(TimeOffsetCentralizationFactor).hash_code();
         }
 
     public:

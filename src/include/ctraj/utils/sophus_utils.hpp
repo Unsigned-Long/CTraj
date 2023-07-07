@@ -59,6 +59,9 @@ namespace Sophus {
                 m.data()[4], m.data()[5], m.data()[6]
         );
     }
+
+    template<typename T>
+    using SO3Tangent = typename Sophus::SO3<T>::Tangent;
 }
 
 namespace Sophus {
