@@ -2,8 +2,8 @@
 // Created by csl on 10/4/22.
 //
 
-#ifndef CTRAJ_SO3_FUNCTOR_HPP
-#define CTRAJ_SO3_FUNCTOR_HPP
+#ifndef CTRAJ_SO3_FACTOR_HPP
+#define CTRAJ_SO3_FACTOR_HPP
 
 #include "ctraj/factors/functor_typedef.hpp"
 
@@ -65,4 +65,4 @@ namespace ns_ctraj {
 
 }
 
-#endif //CTRAJ_SO3_FUNCTOR_HPP
+#endif //CTRAJ_SO3_FACTOR_HPP

@@ -2,8 +2,8 @@
 // Created by csl on 10/4/22.
 //
 
-#ifndef CTRAJ_POS_FUNCTOR_HPP
-#define CTRAJ_POS_FUNCTOR_HPP
+#ifndef CTRAJ_POS_FACTOR_HPP
+#define CTRAJ_POS_FACTOR_HPP
 
 #include "ctraj/factors/functor_typedef.hpp"
 
@@ -63,4 +63,4 @@ namespace ns_ctraj {
     };
 }
 
-#endif //CTRAJ_POS_FUNCTOR_HPP
+#endif //CTRAJ_POS_FACTOR_HPP
