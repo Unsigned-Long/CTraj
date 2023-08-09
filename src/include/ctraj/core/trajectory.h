@@ -60,6 +60,11 @@ namespace ns_ctraj {
             return poseSeq;
         }
 
+        bool SamplingWithSaving(const std::string &filename, double timeDis = INVALID_TIME_STAMP,
+                                double sTime = INVALID_TIME_STAMP, double eTime = INVALID_TIME_STAMP) {
+            return SavePoseSequence(Sampling(timeDis, sTime, eTime), filename);
+        }
+
         void Visualization(Viewer &viewer, double trajSamplingTimeDis = 0.01) {
             viewer.ShowPoseSequence(this->Sampling(trajSamplingTimeDis));
         }

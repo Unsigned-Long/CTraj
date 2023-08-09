@@ -21,6 +21,8 @@ int main() {
     trajItoW.VisualizationDynamic("/home/csl/CppWorks/artwork/ctraj/img");
 
     trajItoW.GetTrajectory()->Save("/home/csl/CppWorks/artwork/ctraj/output/simu_wave_motion.json");
+    trajItoW.GetTrajectory()->SamplingWithSaving("/home/csl/CppWorks/artwork/ctraj/output/pose_seq.json");
+
     trajItoW.GetTrajectory()->ComputeIMUMeasurement({0.0, 0.0, -9.8}, 1.0 / 400.0);
     IMUFrame::SaveFramesToDisk(
             "/home/csl/CppWorks/artwork/ctraj/output/measurements.json",

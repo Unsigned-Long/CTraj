@@ -23,6 +23,17 @@ namespace ns_ctraj {
         const ScaleType cPhi = std::cos(rtp(2)), sPhi = std::sin(rtp(2));
         return Eigen::Matrix<ScaleType, 3, 1>(cTheta * cPhi, sTheta * cPhi, sPhi) * rtp(0);
     }
+
+    inline bool SavePoseSequence(const Eigen::aligned_vector<Posed> &poseSeq, const std::string &filename) {
+        if (auto parPath = std::filesystem::path(filename).parent_path();
+                !exists(parPath) && !std::filesystem::create_directories(parPath)) {
+            return false;
+        }
+        std::ofstream file(filename);
+        cereal::JSONOutputArchive ar(file);
+        ar(cereal::make_nvp("pose_seq", poseSeq));
+        return true;
+    }
 }
 
 #endif //CTRAJ_UTILS_HPP
