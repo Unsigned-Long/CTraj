@@ -13,13 +13,14 @@
 namespace Sophus {
     template<class Archive, typename ScaleTypes>
     void serialize(Archive &archive, Sophus::SO3<ScaleTypes> &m) {
+        // a vector expression of the coefficients (x,y,z,w)
         archive(m.data()[0], m.data()[1], m.data()[2], m.data()[3]);
     }
 
     template<class Archive, typename ScaleTypes>
     void serialize(Archive &archive, Sophus::SE3<ScaleTypes> &m) {
         archive(
-                // so3
+                // so3: a vector expression of the coefficients (x,y,z,w)
                 m.data()[0], m.data()[1], m.data()[2], m.data()[3],
                 // trans
                 m.data()[4], m.data()[5], m.data()[6]
