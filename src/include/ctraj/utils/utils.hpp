@@ -7,6 +7,7 @@
 #define CTRAJ_UTILS_HPP
 
 #include "eigen_utils.hpp"
+#include "ctraj/core/pose.hpp"
 
 namespace ns_ctraj {
     template<typename ScaleType>
