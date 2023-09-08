@@ -39,7 +39,7 @@ namespace ns_ctraj {
             Eigen::Map<Eigen::Vector3<T>> residuals(sResiduals);
 
             Eigen::Vector3<T> normSO3 = Eigen::Vector3<T>::Zero();
-            for (int SO3_BiToBc_OFFSET = 0; SO3_BiToBc_OFFSET < _blockSize; ++SO3_BiToBc_OFFSET) {
+            for (int SO3_BiToBc_OFFSET = 0; SO3_BiToBc_OFFSET < static_cast<int>(_blockSize); ++SO3_BiToBc_OFFSET) {
                 Eigen::Map<Sophus::SO3<T> const> const SO3_BiToBc(sKnots[SO3_BiToBc_OFFSET]);
                 normSO3 += SO3_BiToBc.log();
             }
@@ -83,7 +83,7 @@ namespace ns_ctraj {
             Eigen::Map<Eigen::Vector3<T>> residuals(sResiduals);
 
             Eigen::Vector3<T> normPOS = Eigen::Vector3<T>::Zero();
-            for (int POS_BiInBc_OFFSET = 0; POS_BiInBc_OFFSET < _blockSize; ++POS_BiInBc_OFFSET) {
+            for (int POS_BiInBc_OFFSET = 0; POS_BiInBc_OFFSET < static_cast<int>(_blockSize); ++POS_BiInBc_OFFSET) {
                 Eigen::Map<Eigen::Vector3<T> const> const POS_BiInBc(sKnots[POS_BiInBc_OFFSET]);
                 normPOS += POS_BiInBc;
             }
@@ -129,7 +129,7 @@ namespace ns_ctraj {
 
             Eigen::Vector1<T> normTimeOffset = Eigen::Vector1<T>::Zero();
             for (int TIME_OFFSET_BiToBc_OFFSET = 0;
-                 TIME_OFFSET_BiToBc_OFFSET < _blockSize; ++TIME_OFFSET_BiToBc_OFFSET) {
+                 TIME_OFFSET_BiToBc_OFFSET < static_cast<int>(_blockSize); ++TIME_OFFSET_BiToBc_OFFSET) {
                 Eigen::Map<Eigen::Vector1<T> const> const TIME_OFFSET_BiToBc(sKnots[TIME_OFFSET_BiToBc_OFFSET]);
                 normTimeOffset += TIME_OFFSET_BiToBc;
             }

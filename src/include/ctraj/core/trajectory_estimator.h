@@ -162,11 +162,11 @@ namespace ns_ctraj {
             auto costFunc = SE3Functor<Order>::Create(splineMeta, ItoG, so3Weight, posWeight);
 
             // so3 knots param block [each has four sub params]
-            for (int i = 0; i < splineMeta.NumParameters(); ++i) {
+            for (int i = 0; i < static_cast<int>(splineMeta.NumParameters()); ++i) {
                 costFunc->AddParameterBlock(4);
             }
             // pos knots param block [each has three sub params]
-            for (int i = 0; i < splineMeta.NumParameters(); ++i) {
+            for (int i = 0; i < static_cast<int>(splineMeta.NumParameters()); ++i) {
                 costFunc->AddParameterBlock(3);
             }
             // set Residuals
@@ -204,7 +204,7 @@ namespace ns_ctraj {
             auto costFunc = SO3Functor<Order>::Create(splineMeta, ItoG, so3Weight);
 
             // so3 knots param block [each has four sub params]
-            for (int i = 0; i < splineMeta.NumParameters(); ++i) {
+            for (int i = 0; i < static_cast<int>(splineMeta.NumParameters()); ++i) {
                 costFunc->AddParameterBlock(4);
             }
             // set Residuals
@@ -237,7 +237,7 @@ namespace ns_ctraj {
             auto costFunc = PO3Functor<Order>::Create(splineMeta, ItoG, posWeight);
 
             // pos knots param block [each has three sub params]
-            for (int i = 0; i < splineMeta.NumParameters(); ++i) {
+            for (int i = 0; i < static_cast<int>(splineMeta.NumParameters()); ++i) {
                 costFunc->AddParameterBlock(3);
             }
             // set Residuals

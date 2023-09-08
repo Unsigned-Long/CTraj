@@ -20,8 +20,8 @@ namespace ns_ctraj {
 
     protected:
         Eigen::aligned_vector<Posed> _poseSeq{};
-        double _hz{};
         TrajPtr _trajectory{};
+        double _hz{};
 
     protected:
         explicit SimuTrajectory(double sTime, double eTime, double hz)
@@ -61,7 +61,7 @@ namespace ns_ctraj {
             auto poseSeq = _trajectory->Sampling(trajSamplingTimeDis);
             Viewer viewer(saveShotPath, "VisualizationDynamic");
             viewer.RunInMultiThread();
-            for (int i = 0; i < poseSeq.size() - 1; ++i) {
+            for (int i = 0; i < static_cast<int>(poseSeq.size()) - 1; ++i) {
                 int j = i + 1;
                 const auto &pi = poseSeq.at(i);
                 const auto &pj = poseSeq.at(j);
@@ -244,7 +244,7 @@ namespace ns_ctraj {
     public:
         explicit SimuWaveMotion2(double radius = 2.0, double height = 0.5,
                                  double sTime = 0.0, double eTime = 2 * M_PI, double hz = 10.0)
-                : _radius(radius), _height(height), Parent(sTime, eTime, hz) {
+                : Parent(sTime, eTime, hz), _radius(radius), _height(height) {
             this->SimulateTrajectory();
         }
 
