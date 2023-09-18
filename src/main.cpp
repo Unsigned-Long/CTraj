@@ -6,7 +6,7 @@
 
 int main() {
     using namespace ns_ctraj;
-    double sTime = 0.0, eTime = 2.0 * M_PI;
+    // double sTime = 0.0, eTime = 2.0 * M_PI;
     // auto trajItoW = ns_ctraj::SimuCircularMotion<4>(2.0, sTime, eTime);
     // auto trajItoW = ns_ctraj::SimuSpiralMotion<4>(2.0, 2.0);
     // auto trajItoW = ns_ctraj::SimuEightShapeMotion<4>(5.0, 4.0, 0.5);
