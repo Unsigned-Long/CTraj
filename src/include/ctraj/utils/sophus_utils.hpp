@@ -14,16 +14,26 @@ namespace Sophus {
     template<class Archive, typename ScaleTypes>
     void serialize(Archive &archive, Sophus::SO3<ScaleTypes> &m) {
         // a vector expression of the coefficients (x,y,z,w)
-        archive(m.data()[0], m.data()[1], m.data()[2], m.data()[3]);
+        archive(
+                cereal::make_nvp("qx", m.data()[0]),
+                cereal::make_nvp("qy", m.data()[1]),
+                cereal::make_nvp("qz", m.data()[2]),
+                cereal::make_nvp("qw", m.data()[3])
+        );
     }
 
     template<class Archive, typename ScaleTypes>
     void serialize(Archive &archive, Sophus::SE3<ScaleTypes> &m) {
         archive(
                 // so3: a vector expression of the coefficients (x,y,z,w)
-                m.data()[0], m.data()[1], m.data()[2], m.data()[3],
+                cereal::make_nvp("qx", m.data()[0]),
+                cereal::make_nvp("qy", m.data()[1]),
+                cereal::make_nvp("qz", m.data()[2]),
+                cereal::make_nvp("qw", m.data()[3]),
                 // trans
-                m.data()[4], m.data()[5], m.data()[6]
+                cereal::make_nvp("px", m.data()[4]),
+                cereal::make_nvp("py", m.data()[5]),
+                cereal::make_nvp("pz", m.data()[6])
         );
     }
 
