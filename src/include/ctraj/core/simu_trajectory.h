@@ -19,16 +19,16 @@ namespace ns_ctraj {
         using TrajEstor = TrajectoryEstimator<Order>;
 
     protected:
-        Eigen::aligned_vector<Posed> _poseSeq{};
-        TrajPtr _trajectory{};
-        double _hz{};
+        TrajPtr _trajectory;
+        double _hz;
+        Eigen::aligned_vector<Posed> _poseSeq;
 
     protected:
         explicit SimuTrajectory(double sTime, double eTime, double hz)
-                : _trajectory(Traj::Create(2.0 / hz, sTime, eTime)), _hz(hz) {}
+                : _trajectory(Traj::Create(2.0 / hz, sTime, eTime)), _hz(hz), _poseSeq() {}
 
         SimuTrajectory(const SimuTrajectory &other)
-                : _hz(other._hz), _poseSeq(other._poseSeq), _trajectory(Traj::Create(0.0, 0.0, 0.0)) {
+                : _trajectory(Traj::Create(0.0, 0.0, 0.0)), _hz(other._hz), _poseSeq(other._poseSeq) {
             *this->_trajectory = *other._trajectory;
         }
 
@@ -120,6 +120,23 @@ namespace ns_ctraj {
 
     private:
         static void EstimateTrajectory(const Eigen::aligned_vector<Posed> &poseSeq, const TrajPtr &trajectory) {
+            // coarsely initialize control points
+            for (int i = 0; i < static_cast<int>(trajectory->NumKnots()); ++i) {
+                auto t = trajectory->GetDt() * i + trajectory->MinTime();
+                // ensure the pose sequence is ordered by timestamps
+                auto iter = std::lower_bound(poseSeq.begin(), poseSeq.end(), t, [](const Posed &p, double t) {
+                    return p.timeStamp < t;
+                });
+                Posed pose;
+                if (iter == poseSeq.end()) {
+                    pose = poseSeq.back();
+                } else {
+                    pose = *iter;
+                }
+                trajectory->GetKnotPos(i) = pose.t;
+                trajectory->GetKnotSO3(i) = pose.so3;
+            }
+
             auto estimator = TrajEstor::Create(trajectory);
 
             for (const auto &item: poseSeq) {
@@ -141,7 +158,7 @@ namespace ns_ctraj {
 
     public:
         explicit SimuCircularMotion(double radius = 2.0, double sTime = 0.0, double eTime = 2 * M_PI, double hz = 10.0)
-                : _radius(radius), Parent(sTime, eTime, hz) { this->SimulateTrajectory(); }
+                : Parent(sTime, eTime, hz), _radius(radius) { this->SimulateTrajectory(); }
 
     protected:
         Posed GenPoseSequenceAtTime(double t) override {
@@ -174,7 +191,7 @@ namespace ns_ctraj {
     public:
         explicit SimuSpiralMotion(double radius = 2.0, double heightEachCircle = 2.0,
                                   double sTime = 0.0, double eTime = 4 * M_PI, double hz = 10.0)
-                : _radius(radius), _heightEachCircle(heightEachCircle), Parent(sTime, eTime, hz) {
+                : Parent(sTime, eTime, hz), _radius(radius), _heightEachCircle(heightEachCircle) {
             this->SimulateTrajectory();
         }
 
@@ -281,7 +298,7 @@ namespace ns_ctraj {
     public:
         explicit SimuEightShapeMotion(double xWidth = 5.0, double yWidth = 4.0, double height = 0.5,
                                       double sTime = 0.0, double eTime = 10.0, double hz = 10.0)
-                : _xWidth(xWidth), _yWidth(yWidth), _height(height), Parent(sTime, eTime, hz) {
+                : Parent(sTime, eTime, hz), _xWidth(xWidth), _yWidth(yWidth), _height(height) {
             this->SimulateTrajectory();
         }
 
@@ -316,7 +333,7 @@ namespace ns_ctraj {
     public:
         explicit SimuUniformLinearMotion(const Eigen::Vector3d &from, const Eigen::Vector3d &to,
                                          double sTime = 0.0, double eTime = 10.0, double hz = 10.0)
-                : _from(from), _to(to), Parent(sTime, eTime, hz) { this->SimulateTrajectory(); }
+                : Parent(sTime, eTime, hz), _from(from), _to(to) { this->SimulateTrajectory(); }
 
     protected:
         Posed GenPoseSequenceAtTime(double t) override {
@@ -347,7 +364,7 @@ namespace ns_ctraj {
     public:
         explicit SimuUniformAcceleratedMotion(const Eigen::Vector3d &from, const Eigen::Vector3d &to,
                                               double sTime = 0.0, double eTime = 10.0, double hz = 10.0)
-                : _from(from), _to(to), Parent(sTime, eTime, hz) { this->SimulateTrajectory(); }
+                : Parent(sTime, eTime, hz), _from(from), _to(to) { this->SimulateTrajectory(); }
 
     protected:
         Posed GenPoseSequenceAtTime(double t) override {
@@ -381,10 +398,10 @@ namespace ns_ctraj {
         explicit SimuDrunkardMotion(const Eigen::Vector3d &origin = Eigen::Vector3d::Zero(), double maxStride = 0.5,
                                     double maxAngleDeg = 60.0, double sTime = 0.0, double eTime = 10.0,
                                     double hz = 10.0)
-                : _lastState(Sophus::SO3d(), origin, sTime), _randStride(-maxStride, maxStride),
+                : Parent(sTime, eTime, hz), _lastState(Sophus::SO3d(), origin, sTime),
+                  _randStride(-maxStride, maxStride),
                   _randAngle(-maxAngleDeg / 180.0 * M_PI, maxAngleDeg / 180.0 * M_PI),
-                  _engine(std::chrono::steady_clock::now().time_since_epoch().count()),
-                  Parent(sTime, eTime, hz) { this->SimulateTrajectory(); }
+                  _engine(std::chrono::steady_clock::now().time_since_epoch().count()) { this->SimulateTrajectory(); }
 
     protected:
         Posed GenPoseSequenceAtTime(double t) override {

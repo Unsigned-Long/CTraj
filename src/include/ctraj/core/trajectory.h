@@ -141,7 +141,6 @@ namespace ns_ctraj {
         Eigen::Vector3d AngularVeloInRef(double t) {
             if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
             const auto &so3Spline = this->GetSo3Spline();
-            const auto &posSpline = this->GetPosSpline();
             auto SO3_BodyToRef = so3Spline.Evaluate(t);
             Eigen::Vector3d angularVelInRef = SO3_BodyToRef * so3Spline.VelocityBody(t);
             return angularVelInRef;
@@ -157,7 +156,6 @@ namespace ns_ctraj {
         Eigen::Vector3d AngularAcceInRef(double t) {
             if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
             const auto &so3Spline = this->GetSo3Spline();
-            const auto &posSpline = this->GetPosSpline();
             auto SO3_BodyToRef = so3Spline.Evaluate(t);
             Eigen::Vector3d angularAcceInRef = SO3_BodyToRef * so3Spline.AccelerationBody(t);
             return angularAcceInRef;
@@ -189,7 +187,7 @@ namespace ns_ctraj {
         // -----------------
         Trajectory operator*(const Sophus::SE3d &pose) const {
             Trajectory newTraj = *this;
-            for (int i = 0; i < newTraj.NumKnots(); ++i) {
+            for (int i = 0; i < static_cast<int>(newTraj.NumKnots()); ++i) {
                 newTraj.SetKnot(newTraj.GetKnot(i) * pose, i);
             }
             return newTraj;
@@ -197,7 +195,7 @@ namespace ns_ctraj {
 
         Trajectory operator!() const {
             Trajectory newTraj = *this;
-            for (int i = 0; i < newTraj.NumKnots(); ++i) {
+            for (int i = 0; i < static_cast<int>(newTraj.NumKnots()); ++i) {
                 newTraj.SetKnot(newTraj.GetKnot(i).inverse(), i);
             }
             return newTraj;
@@ -205,7 +203,7 @@ namespace ns_ctraj {
 
         friend Trajectory operator*(const Sophus::SE3d &pose, const Trajectory &simuTrajectory) {
             Trajectory newTraj = simuTrajectory;
-            for (int i = 0; i < newTraj.NumKnots(); ++i) {
+            for (int i = 0; i < static_cast<int>(newTraj.NumKnots()); ++i) {
                 newTraj.SetKnot(pose * newTraj.GetKnot(i), i);
             }
             return newTraj;
