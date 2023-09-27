@@ -65,8 +65,8 @@ namespace ns_ctraj {
             return SavePoseSequence(Sampling(timeDis, sTime, eTime), filename);
         }
 
-        void Visualization(Viewer &viewer, double trajSamplingTimeDis = 0.01) {
-            viewer.ShowPoseSequence(this->Sampling(trajSamplingTimeDis));
+        void Visualization(Viewer &viewer, double trajSamplingTimeDis = 0.01, float size = 0.3f) {
+            viewer.ShowPoseSequence(this->Sampling(trajSamplingTimeDis), size);
         }
 
         std::vector<IMUFrame::Ptr>
