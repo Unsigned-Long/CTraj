@@ -173,7 +173,7 @@ namespace ns_ctraj {
         /// @brief Return time interval in nanoseconds
         ///
         /// @return time interval in seconds
-        [[nodiscard]] double getTimeInterval() const { return dt_; }
+        [[nodiscard]] double GetTimeInterval() const { return dt_; }
 
         /// @brief Evaluate SO(3) B-spline
         ///
