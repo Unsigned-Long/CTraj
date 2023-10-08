@@ -171,6 +171,11 @@ namespace ns_ctraj {
             pos_spline.KnotsPushBack(knot.translation());
         }
 
+        inline void KnotsPushFront(const SE3 &knot) {
+            so3_spline.KnotsPushFront(knot.so3());
+            pos_spline.KnotsPushFront(knot.translation());
+        }
+
         /// @brief Remove knot from the back of the spline
         inline void KnotsPopBack() {
             so3_spline.KnotsPopBack();

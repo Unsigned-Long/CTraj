@@ -134,6 +134,8 @@ namespace ns_ctraj {
         /// @param[in] knot knot to add
         inline void KnotsPushBack(const SO3 &knot) { knots.push_back(knot); }
 
+        inline void KnotsPushFront(const SO3 &knot) { knots.push_front(knot); }
+
         /// @brief Remove knot from the back of the spline
         inline void KnotsPopBack() { knots.pop_back(); }
 
