@@ -3,8 +3,24 @@
 //
 #include "ctraj/core/trajectory.h"
 #include "ctraj/core/simu_trajectory.h"
+#include "ctraj/core/spline_bundle.h"
 
-int main() {
+void TEST_SPLINE_BUNDLE() {
+    using namespace ns_ctraj;
+    auto bundle = SplineBundle<4>::Create({
+                                                  SplineInfo("so3", SplineType::So3Spline, 0.0, 10.0, 0.55),
+                                                  SplineInfo("vel", SplineType::RdSpline, 0.0, 10.0, 0.12),
+                                                  SplineInfo("ba", SplineType::RdSpline, 0.0, 10.0, 1.2),
+                                                  SplineInfo("bg", SplineType::RdSpline, 0.0, 10.0, 1.5),
+                                          });
+    std::cout << *bundle << std::endl;
+    bundle->Save("/home/csl/CppWorks/artwork/ctraj/output/bundle.json");
+    {
+        std::cout << *SplineBundle<4>::Load("/home/csl/CppWorks/artwork/ctraj/output/bundle.json") << std::endl;
+    }
+}
+
+void TEST_TRAJECTORY() {
     using namespace ns_ctraj;
     // double sTime = 0.0, eTime = 2.0 * M_PI;
     // auto trajItoW = ns_ctraj::SimuCircularMotion<4>(2.0, sTime, eTime);
@@ -28,5 +44,9 @@ int main() {
             "/home/csl/CppWorks/artwork/ctraj/output/measurements.json",
             trajItoW.GetTrajectory()->ComputeIMUMeasurement({0.0, 0.0, -9.8}, 1.0 / 400.0), 5
     );
+}
+
+int main() {
+    TEST_SPLINE_BUNDLE();
     return 0;
 }

@@ -72,7 +72,8 @@ namespace ns_ctraj {
         ///
         /// @param[in] time_interval knot time interval
         /// @param[in] start_time start time of the spline
-        explicit So3Spline(double time_interval, double start_time = 0) : dt_(time_interval), start_t_(start_time) {
+        explicit So3Spline(double time_interval = 0.0, double start_time = 0.0)
+                : dt_(time_interval), start_t_(start_time) {
             pow_inv_dt[0] = 1.0;
             pow_inv_dt[1] = 1.0 / dt_;
             pow_inv_dt[2] = pow_inv_dt[1] * pow_inv_dt[1];

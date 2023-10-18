@@ -1,0 +1,135 @@
+// Copyright (c) 2023. Created on 10/18/23 7:45 PM by shlchen@whu.edu.cn (Shuolong Chen), who received the B.S. degree in
+// geodesy and geomatics engineering from Wuhan University, Wuhan China, in 2023. He is currently a master candidate at
+// the school of Geodesy and Geomatics, Wuhan University. His area of research currently focuses on integrated navigation
+// systems and multi-sensor fusion.
+
+#ifndef CTRAJ_SPLINE_BUNDLE_H
+#define CTRAJ_SPLINE_BUNDLE_H
+
+#include <utility>
+#include <ostream>
+#include "ctraj/spline/rd_spline.h"
+#include "ctraj/spline/so3_spline.h"
+#include "cereal/types/map.hpp"
+#include "ctraj/utils/sophus_utils.hpp"
+
+namespace ns_ctraj {
+    enum class SplineType {
+        RdSpline, So3Spline
+    };
+
+    struct SplineInfo {
+        std::string name;
+        SplineType type;
+        double st, et, dt;
+
+        SplineInfo(std::string name, SplineType type, double st, double et, double dt)
+                : name(std::move(name)), type(type), st(st), et(et), dt(dt) {}
+    };
+
+    template<int Order>
+    class SplineBundle {
+    public:
+        static constexpr int N = Order;
+        using Ptr = std::shared_ptr<SplineBundle>;
+        using RdSplineType = RdSpline<3, Order, double>;
+        using So3SplineType = So3Spline<Order, double>;
+        // Eigen::Vector3d
+        using RdSplineKnotType = typename RdSplineType::VecD;
+        // Sophus::SO3d
+        using So3SplineKnotType = typename So3SplineType::SO3;
+
+    private:
+        std::map<std::string, So3SplineType> _so3Splines;
+        std::map<std::string, RdSplineType> _rdSplines;
+
+    public:
+        explicit SplineBundle(const std::vector<SplineInfo> &splines) {
+            for (const auto &spline: splines) { AddSpline(spline); }
+        }
+
+        SplineBundle &AddSpline(const SplineInfo &spline) {
+            switch (spline.type) {
+                case SplineType::RdSpline: {
+                    _rdSplines.insert({spline.name, RdSplineType(spline.dt, spline.st)});
+                    ExtendKnotsTo(_rdSplines.at(spline.name), spline.et, RdSplineKnotType::Zero());
+                }
+                    break;
+                case SplineType::So3Spline: {
+                    _so3Splines.insert({spline.name, So3SplineType(spline.dt, spline.st)});
+                    ExtendKnotsTo(_so3Splines.at(spline.name), spline.et, So3SplineKnotType());
+                }
+                    break;
+            }
+            return *this;
+        }
+
+        static Ptr Create(const std::vector<SplineInfo> &splines) {
+            return std::make_shared<SplineBundle>(splines);
+        }
+
+        void Save(const std::string &filename) const {
+            std::ofstream file(filename);
+            cereal::JSONOutputArchive ar(file);
+            ar(cereal::make_nvp("SplineBundle", *this));
+        }
+
+        static SplineBundle::Ptr Load(const std::string &filename) {
+            auto bundle = SplineBundle::Create({});
+            std::ifstream file(filename);
+            cereal::JSONInputArchive ar(file);
+            ar(cereal::make_nvp("SplineBundle", *bundle));
+            return bundle;
+        }
+
+        const So3SplineType &GetSo3Spline(const std::string &name) const {
+            return _so3Splines.at(name);
+        }
+
+        const RdSplineType &GetRdSpline(const std::string &name) const {
+            return _rdSplines.at(name);
+        }
+
+        bool TimeInRangeForSo3(double time, const std::string &name) {
+            // left closed right open interval
+            auto &spline = _so3Splines.at(name);
+            return time >= spline.MinTime() && time < spline.MaxTime();
+        }
+
+        bool TimeInRangeForRd(double time, const std::string &name) {
+            // left closed right open interval
+            auto &spline = _rdSplines.at(name);
+            return time >= spline.MinTime() && time < spline.MaxTime();
+        }
+
+        friend ostream &operator<<(ostream &os, const SplineBundle &bundle) {
+            os << "SplineBundle:\n";
+            for (const auto &[name, spline]: bundle._so3Splines) {
+                os << "'name': " << name << ", 'SplineType::So3Spline', ['st': " << spline.MinTime()
+                   << ", 'et': " << spline.MaxTime() << ", 'dt': " << spline.GetTimeInterval() << "]\n";
+            }
+            for (const auto &[name, spline]: bundle._rdSplines) {
+                os << "'name': " << name << ", 'SplineType::RdSpline', ['st': " << spline.MinTime()
+                   << ", 'et': " << spline.MaxTime() << ", 'dt': " << spline.GetTimeInterval() << "]\n";
+            }
+            return os;
+        }
+
+    protected:
+        template<class SplineType, class KnotType>
+        static void ExtendKnotsTo(SplineType &spline, double t, const KnotType &init) {
+            while ((spline.GetKnots().size() < N) || (spline.MaxTime() < t)) {
+                spline.KnotsPushBack(init);
+            }
+        }
+
+    public:
+        template<class Archive>
+        void serialize(Archive &ar) {
+            ar(cereal::make_nvp("So3Splines", _so3Splines),
+               cereal::make_nvp("RdSplines", _rdSplines));
+        }
+    };
+}
+
+#endif //CTRAJ_SPLINE_BUNDLE_H
