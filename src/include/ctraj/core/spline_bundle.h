@@ -115,6 +115,24 @@ namespace ns_ctraj {
             return os;
         }
 
+        void CalculateSo3SplineMeta(const std::string &name, time_init_t times,
+                                    ns_ctraj::SplineMeta<Order> &splineMeta) {
+            CalculateSplineMeta(_so3Splines.at(name), times, splineMeta);
+        }
+
+        void CalculateRdSplineMeta(const std::string &name, time_init_t times,
+                                   ns_ctraj::SplineMeta<Order> &splineMeta) {
+            CalculateSplineMeta(_rdSplines.at(name), times, splineMeta);
+        }
+
+    protected:
+        template<class SplineType, class KnotType>
+        static void ExtendKnotsTo(SplineType &spline, double t, const KnotType &init) {
+            while ((spline.GetKnots().size() < N) || (spline.MaxTime() < t)) {
+                spline.KnotsPushBack(init);
+            }
+        }
+
         template<class SplineType>
         static void
         CalculateSplineMeta(const SplineType &spline, time_init_t times, ns_ctraj::SplineMeta<Order> &splineMeta) {
@@ -149,14 +167,6 @@ namespace ns_ctraj {
 
                 current_segment_end = current_segment_start + current_segment_meta.n - 1;
             } // for times
-        }
-
-    protected:
-        template<class SplineType, class KnotType>
-        static void ExtendKnotsTo(SplineType &spline, double t, const KnotType &init) {
-            while ((spline.GetKnots().size() < N) || (spline.MaxTime() < t)) {
-                spline.KnotsPushBack(init);
-            }
         }
 
     public:
