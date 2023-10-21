@@ -7,11 +7,12 @@ set(TinyViewer_DIR ${CMAKE_SOURCE_DIR}/thirdparty/tiny-viewer-build)
 find_package(TinyViewer)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/core CORE_SRC_FILES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/factor FACTOR_SRC_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/view VIEW_SRC_FILES)
 
 add_library(
         ${LIBRARY_NAME} SHARED
-        ${CORE_SRC_FILES} ${VIEW_SRC_FILES}
+        ${CORE_SRC_FILES} ${FACTOR_SRC_FILES} ${VIEW_SRC_FILES}
 )
 
 target_include_directories(

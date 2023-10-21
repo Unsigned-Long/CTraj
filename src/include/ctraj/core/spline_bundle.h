@@ -115,6 +115,42 @@ namespace ns_ctraj {
             return os;
         }
 
+        template<class SplineType>
+        static void
+        CalculateSplineMeta(const SplineType &spline, time_init_t times, ns_ctraj::SplineMeta<Order> &splineMeta) {
+            double master_dt = spline.GetTimeInterval();
+            double master_t0 = spline.MinTime();
+            size_t current_segment_start = 0;
+            size_t current_segment_end = 0; // Negative signals no segment created yet
+
+            // Times are guaranteed to be sorted correctly and t2 >= t1
+            for (auto tt: times) {
+                std::pair<double, size_t> ui_1, ui_2;
+                ui_1 = spline.ComputeTIndex(tt.first);
+                ui_2 = spline.ComputeTIndex(tt.second);
+
+                size_t i1 = ui_1.second;
+                size_t i2 = ui_2.second;
+
+                // Create new segment, or extend the current one
+                if (splineMeta.segments.empty() || i1 > current_segment_end) {
+                    double segment_t0 = master_t0 + master_dt * double(i1);
+                    splineMeta.segments.emplace_back(segment_t0, master_dt);
+                    current_segment_start = i1;
+                } else {
+                    i1 = current_segment_end + 1;
+                }
+
+                auto &current_segment_meta = splineMeta.segments.back();
+
+                for (size_t i = i1; i < (i2 + N); ++i) {
+                    current_segment_meta.n += 1;
+                }
+
+                current_segment_end = current_segment_start + current_segment_meta.n - 1;
+            } // for times
+        }
+
     protected:
         template<class SplineType, class KnotType>
         static void ExtendKnotsTo(SplineType &spline, double t, const KnotType &init) {
