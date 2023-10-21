@@ -12,6 +12,7 @@
 #include "ctraj/spline/so3_spline.h"
 #include "cereal/types/map.hpp"
 #include "ctraj/utils/sophus_utils.hpp"
+#include "ctraj/spline/spline_segment.h"
 
 namespace ns_ctraj {
     enum class SplineType {
@@ -38,6 +39,7 @@ namespace ns_ctraj {
         using RdSplineKnotType = typename RdSplineType::VecD;
         // Sophus::SO3d
         using So3SplineKnotType = typename So3SplineType::SO3;
+        using SplineMetaType = ns_ctraj::SplineMeta<Order>;
 
     private:
         std::map<std::string, So3SplineType> _so3Splines;
@@ -115,13 +117,11 @@ namespace ns_ctraj {
             return os;
         }
 
-        void CalculateSo3SplineMeta(const std::string &name, time_init_t times,
-                                    ns_ctraj::SplineMeta<Order> &splineMeta) {
+        void CalculateSo3SplineMeta(const std::string &name, time_init_t times, SplineMetaType &splineMeta) const {
             CalculateSplineMeta(_so3Splines.at(name), times, splineMeta);
         }
 
-        void CalculateRdSplineMeta(const std::string &name, time_init_t times,
-                                   ns_ctraj::SplineMeta<Order> &splineMeta) {
+        void CalculateRdSplineMeta(const std::string &name, time_init_t times, SplineMetaType &splineMeta) const {
             CalculateSplineMeta(_rdSplines.at(name), times, splineMeta);
         }
 
@@ -134,8 +134,7 @@ namespace ns_ctraj {
         }
 
         template<class SplineType>
-        static void
-        CalculateSplineMeta(const SplineType &spline, time_init_t times, ns_ctraj::SplineMeta<Order> &splineMeta) {
+        static void CalculateSplineMeta(const SplineType &spline, time_init_t times, SplineMetaType &splineMeta) {
             double master_dt = spline.GetTimeInterval();
             double master_t0 = spline.MinTime();
             size_t current_segment_start = 0;
