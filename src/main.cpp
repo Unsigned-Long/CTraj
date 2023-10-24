@@ -4,6 +4,7 @@
 #include "ctraj/core/trajectory.h"
 #include "ctraj/core/simu_trajectory.h"
 #include "ctraj/core/spline_bundle.h"
+#include "ctraj/nofree/marg_test.hpp"
 
 void TEST_SPLINE_BUNDLE() {
     using namespace ns_ctraj;
@@ -47,6 +48,7 @@ void TEST_TRAJECTORY() {
 }
 
 int main() {
-    TEST_SPLINE_BUNDLE();
+    // TEST_SPLINE_BUNDLE();
+    ns_ctraj::MargTest::OrganizeProblem();
     return 0;
 }
