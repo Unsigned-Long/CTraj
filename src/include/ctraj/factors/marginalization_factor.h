@@ -90,7 +90,8 @@ namespace ns_ctraj {
         explicit MarginalizationFactor(MarginalizationInfo::Ptr margInfo, double weight);
 
     public:
-        static auto AddToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo, double weight);
+        static MarginalizationFactor *
+        AddToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo, double weight);
 
         static std::size_t TypeHashCode();
 

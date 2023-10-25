@@ -53,20 +53,31 @@ namespace ns_ctraj {
             double x2 = -1.0;
             double x3 = 0.0;
             double x4 = 1.0;
-            auto problem = std::make_shared<ceres::Problem>();
-            // Add residual terms to the problem using the autodiff
-            // wrapper to get the derivatives automatically. The parameters, x1 through
-            // x4, are modified in place.
-            problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F1, 1, 1, 1>(new F1), nullptr, &x1, &x2);
-            problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F2, 1, 1, 1>(new F2), nullptr, &x3, &x4);
-            problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F3, 1, 1, 1>(new F3), nullptr, &x2, &x3);
-            problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F4, 1, 1, 1>(new F4), nullptr, &x1, &x4);
 
-            LOG_VAR(&x1, &x2, &x3, &x4)
-            MarginalizationInfo marg(problem.get(), {&x2, &x4});
-            return;
+            MarginalizationInfo::Ptr marg;
+
+            ceres::Problem::Options opt;
+            opt.manifold_ownership = ceres::Ownership::DO_NOT_TAKE_OWNERSHIP;
+            {
+
+                auto problem = std::make_shared<ceres::Problem>(opt);
+                // Add residual terms to the problem using the autodiff
+                // wrapper to get the derivatives automatically. The parameters, x1 through
+                // x4, are modified in place.
+                problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F1, 1, 1, 1>(new F1), nullptr, &x1, &x2);
+                problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F2, 1, 1, 1>(new F2), nullptr, &x3, &x4);
+                problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F3, 1, 1, 1>(new F3), nullptr, &x2, &x3);
+                problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F4, 1, 1, 1>(new F4), nullptr, &x1, &x4);
+
+                LOG_VAR(x1, x2, x3, x4)
+                LOG_VAR(&x1, &x2, &x3, &x4)
+                marg = MarginalizationInfo::Create(problem.get(), {&x2, &x4});
+            }
+
+            auto problem = std::make_shared<ceres::Problem>(opt);
+            auto factor = MarginalizationFactor::AddToProblem(problem.get(), marg, 1.0);
+
             ceres::Solver::Options options;
-
             options.max_num_iterations = 100;
             options.linear_solver_type = ceres::DENSE_QR;
             options.minimizer_progress_to_stdout = true;

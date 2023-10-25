@@ -159,6 +159,8 @@ namespace ns_ctraj {
         // JMat.t().inv() * bVec
         linRVec = SInvSqrt.asDiagonal() * saes2.eigenvectors().transpose() * bVecSchur;
 
+        // LOG_VAR(linJMat)
+        // LOG_VAR(linRVec)
         // Eigen::MatrixXd temp = SInvSqrt.asDiagonal() * saes2.eigenvectors().transpose();
         // LOG_VAR(temp.inverse().transpose())
         // LOG_VAR(linJMat)
@@ -178,8 +180,9 @@ namespace ns_ctraj {
         this->set_num_residuals(this->margInfo->GetKeepParDime());
     }
 
-    auto MarginalizationFactor::AddToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo,
-                                             double weight) {
+    MarginalizationFactor *
+    MarginalizationFactor::AddToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo,
+                                        double weight) {
         auto func = new MarginalizationFactor(margInfo, weight);
 
         std::vector<double *> keepParBlocksAdd;
@@ -190,6 +193,7 @@ namespace ns_ctraj {
             keepParBlocksAdd.push_back(block.address);
         }
 
+        LOG_VAR(keepParBlocksAdd)
         // add to problem
         prob->AddResidualBlock(func, nullptr, keepParBlocksAdd);
         // set manifold
@@ -242,11 +246,12 @@ namespace ns_ctraj {
 
         if (jacobians != nullptr) {
             for (int i = 0; i < static_cast<int>(keepParBlocks.size()); ++i) {
-                if (jacobians[0] != nullptr) {
+                if (jacobians[i] != nullptr) {
                     const auto &block = keepParBlocks.at(i);
                     Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
                             jacobian(jacobians[i], keepParDime, block.globalSize);
-                    jacobian = margInfo->GetLinJMat().middleCols(block.index - margParDime, block.globalSize);
+                    // todo: big problem exists!!!
+                    jacobian = margInfo->GetLinJMat().middleCols(block.index - margParDime, block.localSize);
                 }
             }
         }
