@@ -54,16 +54,17 @@ namespace ns_ctraj {
         this->keepParBlocks.reserve(totalParBlocksAdd.size());
         margParDime = 0, keepParDime = 0;
         // reorganize parameter blocks: [ marg | keep ]
-        for (const auto &add: totalParBlocksAdd) {
-            auto size = this->prob->ParameterBlockTangentSize(add);
-            if (margParBlockAddVec.find(add) != margParBlockAddVec.cend()) {
+        for (const auto &address: totalParBlocksAdd) {
+            auto globalSize = this->prob->ParameterBlockSize(address);
+            auto localSize = this->prob->ParameterBlockTangentSize(address);
+            if (margParBlockAddVec.find(address) != margParBlockAddVec.cend()) {
                 // this param block needs to be marg
-                this->margParBlocks.emplace_back(add, size);
-                margParDime += size;
+                this->margParBlocks.emplace_back(address, globalSize, localSize, prob->GetManifold(address));
+                margParDime += localSize;
             } else {
                 // this param block needs to be kept
-                this->keepParBlocks.emplace_back(add, size);
-                keepParDime += size;
+                this->keepParBlocks.emplace_back(address, globalSize, localSize, prob->GetManifold(address));
+                keepParDime += localSize;
             }
         }
         // LOG_VAR(totalParBlocksAdd)
@@ -77,9 +78,9 @@ namespace ns_ctraj {
         evalOpt.parameter_blocks.resize(totalParBlocksAdd.size());
         for (int i = 0; i < static_cast<int>(totalParBlocksAdd.size()); ++i) {
             if (i < static_cast<int>(margParBlocks.size())) {
-                evalOpt.parameter_blocks.at(i) = margParBlocks.at(i).first;
+                evalOpt.parameter_blocks.at(i) = std::get<0>(margParBlocks.at(i));
             } else {
-                evalOpt.parameter_blocks.at(i) = keepParBlocks.at(i - margParBlocks.size()).first;
+                evalOpt.parameter_blocks.at(i) = std::get<0>(keepParBlocks.at(i - margParBlocks.size()));
             }
         }
 
@@ -147,5 +148,28 @@ namespace ns_ctraj {
         // Eigen::MatrixXd temp = SInvSqrt.asDiagonal() * saes2.eigenvectors().transpose();
         // LOG_VAR(temp.inverse().transpose())
         // LOG_VAR(linJMat)
+    }
+
+    MarginalizationInfo::Ptr MarginalizationInfo::Create(const MarginalizationInfo::ProblemPtr &prob,
+                                                         const std::set<double *> &margParBlockAddVec) {
+        return std::make_shared<MarginalizationInfo>(prob, margParBlockAddVec);
+    }
+
+    const std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> &
+    MarginalizationInfo::GetKeepParBlocks() const {
+        return keepParBlocks;
+    }
+
+    int MarginalizationInfo::GetMargParDime() const {
+        return margParDime;
+    }
+
+    int MarginalizationInfo::GetKeepParDime() const {
+        return keepParDime;
+    }
+
+    const std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> &
+    MarginalizationInfo::GetMargParBlocks() const {
+        return margParBlocks;
     }
 }

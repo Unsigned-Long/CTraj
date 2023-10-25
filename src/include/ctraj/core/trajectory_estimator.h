@@ -85,8 +85,8 @@ namespace ns_ctraj {
 
     protected:
         TrajPtr _trajectory;
-        ceres::EigenQuaternionManifold *QUATER_MANIFOLD;
-        ceres::SphereManifold<3> *S2_MANIFOLD;
+        std::shared_ptr<ceres::EigenQuaternionManifold> QUATER_MANIFOLD;
+        std::shared_ptr<ceres::SphereManifold<3>> S2_MANIFOLD;
 
     public:
         // using default problem options to create a 'TrajectoryEstimator'
@@ -100,7 +100,8 @@ namespace ns_ctraj {
 
             // organize the default problem options
             ceres::Problem::Options defaultProblemOptions;
-            defaultProblemOptions.loss_function_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
+            defaultProblemOptions.loss_function_ownership = ceres::TAKE_OWNERSHIP;
+            // we want to own the manifold ourselves, not the ceres::Problem itself
             defaultProblemOptions.manifold_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
 
             return defaultProblemOptions;
@@ -276,8 +277,8 @@ namespace ns_ctraj {
                     switch (flag) {
                         case AddCtrlPointsDataFlag::SO3_KNOTS:
                             data = _trajectory->GetKnotSO3(i).data();
-                            // the local parameterization is very very important!!!
-                            this->AddParameterBlock(data, 4, QUATER_MANIFOLD);
+                            // the local parameterization is very, very important!!!
+                            this->AddParameterBlock(data, 4, QUATER_MANIFOLD.get());
                             break;
                         case AddCtrlPointsDataFlag::POS_KNOTS:
                             data = _trajectory->GetKnotPos(i).data();
