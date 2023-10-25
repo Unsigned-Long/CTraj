@@ -7,6 +7,7 @@
 #define CTRAJ_MARGINALIZATION_FACTOR_H
 
 #include <utility>
+#include <ostream>
 #include "ctraj/utils/eigen_utils.hpp"
 #include "ceres/ceres.h"
 
@@ -29,6 +30,8 @@ namespace ns_ctraj {
         public:
             explicit ParBlockInfo(double *address = nullptr, int globalSize = 0, int localSize = 0,
                                   const ceres::Manifold *manifold = nullptr, int index = 0);
+
+            friend std::ostream &operator<<(std::ostream &os, const ParBlockInfo &info);
         };
 
     private:

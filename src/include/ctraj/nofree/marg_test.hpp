@@ -71,7 +71,7 @@ namespace ns_ctraj {
 
                 LOG_VAR(x1, x2, x3, x4)
                 LOG_VAR(&x1, &x2, &x3, &x4)
-                marg = MarginalizationInfo::Create(problem.get(), {&x2, &x4});
+                marg = MarginalizationInfo::Create(problem.get(), {&x1, &x3, &x4});
             }
 
             auto problem = std::make_shared<ceres::Problem>(opt);

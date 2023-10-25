@@ -193,7 +193,6 @@ namespace ns_ctraj {
             keepParBlocksAdd.push_back(block.address);
         }
 
-        LOG_VAR(keepParBlocksAdd)
         // add to problem
         prob->AddResidualBlock(func, nullptr, keepParBlocksAdd);
         // set manifold
@@ -217,8 +216,10 @@ namespace ns_ctraj {
 
         // parameter blocks to keep
         const auto &keepParBlocks = margInfo->GetKeepParBlocks();
-        int margParDime = margInfo->GetMargParDime();
         int keepParDime = margInfo->GetKeepParDime();
+
+        LOG_VAR(keepParBlocks)
+        LOG_VAR(keepParDime)
 
         // for each parameter block to optimized
         for (int i = 0; i < static_cast<int>(keepParBlocks.size()); ++i) {
@@ -229,7 +230,7 @@ namespace ns_ctraj {
 
             if (block.manifold == nullptr) {
                 // if no manifold employed, perform minus in vector space
-                dx.segment(block.index - margParDime, block.localSize) = x - block.oldState;
+                dx.segment(block.index, block.localSize) = x - block.oldState;
             } else {
                 // otherwise, perform minus in manifold space
 
@@ -237,7 +238,7 @@ namespace ns_ctraj {
                 Eigen::VectorXd delta(block.localSize);
                 block.manifold->Minus(x.data(), block.oldState.data(), delta.data());
 
-                dx.segment(block.index - margParDime, block.localSize) = delta;
+                dx.segment(block.index, block.localSize) = delta;
             }
         }
 
@@ -250,8 +251,18 @@ namespace ns_ctraj {
                     const auto &block = keepParBlocks.at(i);
                     Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
                             jacobian(jacobians[i], keepParDime, block.globalSize);
-                    // todo: big problem exists!!!
-                    jacobian = margInfo->GetLinJMat().middleCols(block.index - margParDime, block.localSize);
+                    if (block.manifold == nullptr) {
+                        // (ResNum * Size), i.e., 'globalSize' = 'localSize'
+                        jacobian = margInfo->GetLinJMat().middleCols(block.index, block.localSize);
+                    } else {
+                        // todo: big problem exists!!!
+                        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+                                minusJacobian(block.manifold->TangentSize(), block.manifold->AmbientSize());
+                        block.manifold->MinusJacobian(block.oldState.data(), minusJacobian.data());
+
+                        // (ResNum * AmbientSize) = (ResNum * TangentSize) * (TangentSize * AmbientSize)
+                        jacobian = margInfo->GetLinJMat().middleCols(block.index, block.localSize) * minusJacobian;
+                    }
                 }
             }
         }
@@ -267,5 +278,11 @@ namespace ns_ctraj {
             : address(address), globalSize(globalSize), localSize(localSize),
               manifold(manifold), oldState(globalSize), index(index) {
         for (int i = 0; i < globalSize; ++i) { oldState(i) = address[i]; }
+    }
+
+    std::ostream &operator<<(std::ostream &os, const MarginalizationInfo::ParBlockInfo &info) {
+        os << "address: " << info.address << " globalSize: " << info.globalSize << " localSize: " << info.localSize
+           << " oldState: " << info.oldState << " index: " << info.index;
+        return os;
     }
 }
