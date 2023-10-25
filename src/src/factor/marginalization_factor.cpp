@@ -218,9 +218,6 @@ namespace ns_ctraj {
         const auto &keepParBlocks = margInfo->GetKeepParBlocks();
         int keepParDime = margInfo->GetKeepParDime();
 
-        LOG_VAR(keepParBlocks)
-        LOG_VAR(keepParDime)
-
         // for each parameter block to optimized
         for (int i = 0; i < static_cast<int>(keepParBlocks.size()); ++i) {
             const auto &block = keepParBlocks.at(i);

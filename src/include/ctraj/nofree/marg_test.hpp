@@ -71,32 +71,34 @@ namespace ns_ctraj {
 
                 LOG_VAR(x1, x2, x3, x4)
                 LOG_VAR(&x1, &x2, &x3, &x4)
-                marg = MarginalizationInfo::Create(problem.get(), {&x1, &x3, &x4});
+                marg = MarginalizationInfo::Create(problem.get(), {&x2, &x4});
             }
+            {
+                // testing
+                auto problem = std::make_shared<ceres::Problem>(opt);
+                auto factor = MarginalizationFactor::AddToProblem(problem.get(), marg, 1.0);
 
-            auto problem = std::make_shared<ceres::Problem>(opt);
-            auto factor = MarginalizationFactor::AddToProblem(problem.get(), marg, 1.0);
-
-            ceres::Solver::Options options;
-            options.max_num_iterations = 100;
-            options.linear_solver_type = ceres::DENSE_QR;
-            options.minimizer_progress_to_stdout = true;
-            // clang-format off
-            std::cout << "Initial x1 = " << x1
-                      << ", x2 = " << x2
-                      << ", x3 = " << x3
-                      << ", x4 = " << x4
-                      << "\n";
-            // clang-format on
-            // Run the solver!
-            ceres::Solver::Summary summary;
-            ceres::Solve(options, problem.get(), &summary);
-            // clang-format off
-            std::cout << "Final x1 = " << x1
-                      << ", x2 = " << x2
-                      << ", x3 = " << x3
-                      << ", x4 = " << x4
-                      << "\n";
+                ceres::Solver::Options options;
+                options.max_num_iterations = 100;
+                options.linear_solver_type = ceres::DENSE_QR;
+                options.minimizer_progress_to_stdout = true;
+                // clang-format off
+                std::cout << "Initial x1 = " << x1
+                          << ", x2 = " << x2
+                          << ", x3 = " << x3
+                          << ", x4 = " << x4
+                          << "\n";
+                // clang-format on
+                // Run the solver!
+                ceres::Solver::Summary summary;
+                ceres::Solve(options, problem.get(), &summary);
+                // clang-format off
+                std::cout << "Final x1 = " << x1
+                          << ", x2 = " << x2
+                          << ", x3 = " << x3
+                          << ", x4 = " << x4
+                          << "\n";
+            }
         }
 
     };
