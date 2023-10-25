@@ -7,7 +7,6 @@
 #define CTRAJ_MARGINALIZATION_FACTOR_H
 
 #include <utility>
-
 #include "ctraj/utils/eigen_utils.hpp"
 #include "ceres/ceres.h"
 
@@ -16,11 +15,28 @@ namespace ns_ctraj {
     public:
         using Ptr = std::shared_ptr<MarginalizationInfo>;
 
+        struct ParBlockInfo {
+        public:
+
+            double *address;
+            int globalSize;
+            int localSize;
+            const ceres::Manifold *manifold;
+            // this member is owned by this BlockInfo
+            Eigen::VectorXd oldState;
+            int index;
+
+        public:
+            explicit ParBlockInfo(double *address = nullptr, int globalSize = 0, int localSize = 0,
+                                  const ceres::Manifold *manifold = nullptr, int index = 0);
+        };
+
     private:
 
+
         // address, global size, local size
-        std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> margParBlocks;
-        std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> keepParBlocks;
+        std::vector<ParBlockInfo> margParBlocks;
+        std::vector<ParBlockInfo> keepParBlocks;
 
         int margParDime;
         int keepParDime;
@@ -41,15 +57,21 @@ namespace ns_ctraj {
 
         static Ptr Create(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec);
 
-        [[nodiscard]] const std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> &
-        GetKeepParBlocks() const;
+        [[nodiscard]] inline const std::vector<MarginalizationInfo::ParBlockInfo> &GetKeepParBlocks() const {
+            return keepParBlocks;
+        }
 
-        [[nodiscard]] const std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> &
-        GetMargParBlocks() const;
+        [[nodiscard]] inline int GetMargParDime() const { return margParDime; }
 
-        [[nodiscard]] int GetMargParDime() const;
+        [[nodiscard]] inline int GetKeepParDime() const { return keepParDime; }
 
-        [[nodiscard]] int GetKeepParDime() const;
+        [[nodiscard]] inline const std::vector<MarginalizationInfo::ParBlockInfo> &GetMargParBlocks() const {
+            return margParBlocks;
+        }
+
+        [[nodiscard]] inline const Eigen::MatrixXd &GetLinJMat() const { return linJMat; }
+
+        [[nodiscard]] inline const Eigen::VectorXd &GetLinRVec() const { return linRVec; }
 
     protected:
         static Eigen::MatrixXd CRSMatrix2EigenMatrix(ceres::CRSMatrix *jacobianCRSMat);
@@ -59,56 +81,21 @@ namespace ns_ctraj {
         void SchurComplement();
     };
 
-    class MarginalizationFactor {
+    class MarginalizationFactor : public ceres::CostFunction {
     private:
         MarginalizationInfo::Ptr margInfo;
         double weight;
 
     protected:
-        explicit MarginalizationFactor(MarginalizationInfo::Ptr margInfo, double weight)
-                : margInfo(std::move(margInfo)), weight(weight) {}
+        explicit MarginalizationFactor(MarginalizationInfo::Ptr margInfo, double weight);
 
     public:
-        static auto AddMarginalizationFactorToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo,
-                                                      double weight) {
-            auto func = new ceres::DynamicAutoDiffCostFunction<MarginalizationFactor>(
-                    new MarginalizationFactor(margInfo, weight)
-            );
+        static auto AddToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo, double weight);
 
-            std::vector<double *> keepParBlocksAdd;
-            keepParBlocksAdd.reserve(margInfo->GetKeepParBlocks().size());
-
-            // assign param blocks for cost function
-            for (const auto &[address, globalSize, localSize, manifold]: margInfo->GetKeepParBlocks()) {
-                func->AddParameterBlock(globalSize);
-                keepParBlocksAdd.push_back(address);
-            }
-
-            // set residuals dime
-            func->SetNumResiduals(margInfo->GetKeepParDime());
-
-            // add to problem
-            prob->AddResidualBlock(func, nullptr, keepParBlocksAdd);
-            // set manifold
-            for (const auto &[address, globalSize, localSize, manifold]: margInfo->GetKeepParBlocks()) {
-                // attention: problem should not own the manifolds!!!
-                // i.e., Problem::Options::manifold_ownership = ceres::Ownership::DO_NOT_TAKE_OWNERSHIP
-                if (manifold != nullptr) { prob->SetManifold(address, const_cast<ceres::Manifold *>(manifold)); }
-            }
-            return func;
-        }
-
-        static std::size_t TypeHashCode() {
-            return typeid(MarginalizationFactor).hash_code();
-        }
+        static std::size_t TypeHashCode();
 
     public:
-        template<class T>
-        bool operator()(T const *const *parBlocks, T *residuals) const {
-            // todo: ...
-            return true;
-        };
-
+        bool Evaluate(double const *const *parBlocks, double *residuals, double **jacobians) const override;
     };
 }
 

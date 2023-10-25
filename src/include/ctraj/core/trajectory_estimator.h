@@ -85,16 +85,15 @@ namespace ns_ctraj {
 
     protected:
         TrajPtr _trajectory;
-        std::shared_ptr<ceres::EigenQuaternionManifold> QUATER_MANIFOLD;
-        std::shared_ptr<ceres::SphereManifold<3>> S2_MANIFOLD;
+        static std::shared_ptr<ceres::EigenQuaternionManifold> QUATER_MANIFOLD;
+        static std::shared_ptr<ceres::SphereManifold<3>> S2_MANIFOLD;
 
     public:
         // using default problem options to create a 'TrajectoryEstimator'
         explicit TrajectoryEstimator(
                 TrajPtr trajectory,
                 const ceres::Problem::Options &options = TrajectoryEstimator::DefaultProblemOptions())
-                : ceres::Problem(options), _trajectory(std::move(trajectory)),
-                  QUATER_MANIFOLD(new ceres::EigenQuaternionManifold()), S2_MANIFOLD(new ceres::SphereManifold<3>()) {}
+                : ceres::Problem(options), _trajectory(std::move(trajectory)) {}
 
         static ceres::Problem::Options DefaultProblemOptions() {
 
@@ -305,6 +304,14 @@ namespace ns_ctraj {
             return Problem::AddResidualBlock(costFunc, lossFunc, paramBlocks);
         }
     };
+
+    template<int Order>
+    std::shared_ptr<ceres::EigenQuaternionManifold> TrajectoryEstimator<Order>::QUATER_MANIFOLD
+            = std::make_shared<ceres::EigenQuaternionManifold>();
+
+    template<int Order>
+    std::shared_ptr<ceres::SphereManifold<3>> TrajectoryEstimator<Order>::S2_MANIFOLD
+            = std::make_shared<ceres::SphereManifold<3>>();
 }
 
 #endif //CTRAJ_TRAJECTORY_ESTIMATOR_H
