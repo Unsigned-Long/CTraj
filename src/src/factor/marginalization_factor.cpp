@@ -13,11 +13,16 @@
 
 namespace ns_ctraj {
 
-    MarginalizationInfo::MarginalizationInfo(MarginalizationInfo::ProblemPtr prob,
+    MarginalizationInfo::MarginalizationInfo(ceres::Problem *prob,
                                              const std::set<double *> &margParBlockAddVec)
-            : prob(std::move(prob)), margParDime(), keepParDime() {
-        this->PreMarginalization(margParBlockAddVec);
+            : margParDime(), keepParDime() {
+        this->PreMarginalization(prob, margParBlockAddVec);
         this->SchurComplement();
+    }
+
+    MarginalizationInfo::Ptr MarginalizationInfo::Create(ceres::Problem *prob,
+                                                         const std::set<double *> &margParBlockAddVec) {
+        return std::make_shared<MarginalizationInfo>(prob, margParBlockAddVec);
     }
 
     Eigen::MatrixXd MarginalizationInfo::CRSMatrix2EigenMatrix(ceres::CRSMatrix *jacobianCRSMat) {
@@ -43,10 +48,11 @@ namespace ns_ctraj {
         return JMat;
     }
 
-    void MarginalizationInfo::PreMarginalization(const std::set<double *> &margParBlockAddVec) {
+    void
+    MarginalizationInfo::PreMarginalization(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec) {
         // obtain the total parameter blocks
         std::vector<double *> totalParBlocksAdd;
-        this->prob->GetParameterBlocks(&totalParBlocksAdd);
+        prob->GetParameterBlocks(&totalParBlocksAdd);
 
         // size <= margParBlockAddVec.size()
         this->margParBlocks.reserve(margParBlockAddVec.size());
@@ -55,8 +61,8 @@ namespace ns_ctraj {
         margParDime = 0, keepParDime = 0;
         // reorganize parameter blocks: [ marg | keep ]
         for (const auto &address: totalParBlocksAdd) {
-            auto globalSize = this->prob->ParameterBlockSize(address);
-            auto localSize = this->prob->ParameterBlockTangentSize(address);
+            auto globalSize = prob->ParameterBlockSize(address);
+            auto localSize = prob->ParameterBlockTangentSize(address);
             if (margParBlockAddVec.find(address) != margParBlockAddVec.cend()) {
                 // this param block needs to be marg
                 this->margParBlocks.emplace_back(address, globalSize, localSize, prob->GetManifold(address));
@@ -88,7 +94,7 @@ namespace ns_ctraj {
 
         ceres::CRSMatrix jacobianCRSMatrix;
         std::vector<double> residuals;
-        this->prob->Evaluate(evalOpt, nullptr, &residuals, nullptr, &jacobianCRSMatrix);
+        prob->Evaluate(evalOpt, nullptr, &residuals, nullptr, &jacobianCRSMatrix);
         JMat = CRSMatrix2EigenMatrix(&jacobianCRSMatrix);
         rVec = Eigen::VectorXd(residuals.size());
         for (int i = 0; i < static_cast<int>(residuals.size()); ++i) { rVec(i) = residuals.at(i); }
@@ -148,11 +154,6 @@ namespace ns_ctraj {
         // Eigen::MatrixXd temp = SInvSqrt.asDiagonal() * saes2.eigenvectors().transpose();
         // LOG_VAR(temp.inverse().transpose())
         // LOG_VAR(linJMat)
-    }
-
-    MarginalizationInfo::Ptr MarginalizationInfo::Create(const MarginalizationInfo::ProblemPtr &prob,
-                                                         const std::set<double *> &margParBlockAddVec) {
-        return std::make_shared<MarginalizationInfo>(prob, margParBlockAddVec);
     }
 
     const std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> &

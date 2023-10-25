@@ -63,7 +63,7 @@ namespace ns_ctraj {
             problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F4, 1, 1, 1>(new F4), nullptr, &x1, &x4);
 
             LOG_VAR(&x1, &x2, &x3, &x4)
-            MarginalizationInfo marg(problem, {&x2, &x4});
+            MarginalizationInfo marg(problem.get(), {&x2, &x4});
             return;
             ceres::Solver::Options options;
 

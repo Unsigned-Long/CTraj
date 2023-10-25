@@ -15,10 +15,8 @@ namespace ns_ctraj {
     class MarginalizationInfo {
     public:
         using Ptr = std::shared_ptr<MarginalizationInfo>;
-        using ProblemPtr = std::shared_ptr<ceres::Problem>;
 
     private:
-        ProblemPtr prob;
 
         // address, global size, local size
         std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> margParBlocks;
@@ -39,9 +37,9 @@ namespace ns_ctraj {
         Eigen::VectorXd linRVec;
 
     public:
-        explicit MarginalizationInfo(ProblemPtr prob, const std::set<double *> &margParBlockAddVec);
+        explicit MarginalizationInfo(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec);
 
-        static Ptr Create(const ProblemPtr &prob, const std::set<double *> &margParBlockAddVec);
+        static Ptr Create(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec);
 
         [[nodiscard]] const std::vector<std::tuple<double *, int, int, const ceres::Manifold *>> &
         GetKeepParBlocks() const;
@@ -56,7 +54,7 @@ namespace ns_ctraj {
     protected:
         static Eigen::MatrixXd CRSMatrix2EigenMatrix(ceres::CRSMatrix *jacobianCRSMat);
 
-        void PreMarginalization(const std::set<double *> &margParBlockAddVec);
+        void PreMarginalization(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec);
 
         void SchurComplement();
     };
@@ -106,7 +104,7 @@ namespace ns_ctraj {
 
     public:
         template<class T>
-        bool operator()(T const *const *sKnots, T *sResiduals) const {
+        bool operator()(T const *const *parBlocks, T *residuals) const {
             // todo: ...
             return true;
         };
