@@ -18,16 +18,19 @@ namespace ns_ctraj {
     private:
         ProblemPtr prob;
 
+        std::vector<std::pair<double *, int>> margParBlocks;
+        std::vector<std::pair<double *, int>> keepParBlocks;
+
+        int margParDime;
+        int keepParDime;
+
         Eigen::MatrixXd JMat;
         Eigen::VectorXd rVec;
 
         Eigen::MatrixXd HMat;
         Eigen::VectorXd bVec;
 
-        int margNum;
-        int keepNum;
-
-        const double eps = 1e-8;
+        const double EPS = 1E-8;
 
         Eigen::MatrixXd linJMat;
         Eigen::VectorXd linRVec;

@@ -15,7 +15,7 @@ namespace ns_ctraj {
 
     MarginalizationInfo::MarginalizationInfo(MarginalizationInfo::ProblemPtr prob,
                                              const std::set<double *> &margParBlockAddVec)
-            : prob(std::move(prob)), JMat(), rVec(), margNum(), keepNum() {
+            : prob(std::move(prob)), margParDime(), keepParDime() {
         this->PreMarginalization(margParBlockAddVec);
         this->SchurComplement();
     }
@@ -48,27 +48,43 @@ namespace ns_ctraj {
         std::vector<double *> totalParBlocksAdd;
         this->prob->GetParameterBlocks(&totalParBlocksAdd);
 
-        ceres::Problem::EvaluateOptions evalOpt;
+        // size <= margParBlockAddVec.size()
+        this->margParBlocks.reserve(margParBlockAddVec.size());
+        // size <= totalParBlocksAdd.size()
+        this->keepParBlocks.reserve(totalParBlocksAdd.size());
+        margParDime = 0, keepParDime = 0;
         // reorganize parameter blocks: [ marg | keep ]
-        evalOpt.parameter_blocks.resize(totalParBlocksAdd.size());
-        margNum = 0, keepNum = static_cast<int>(evalOpt.parameter_blocks.size());
         for (const auto &add: totalParBlocksAdd) {
+            auto size = this->prob->ParameterBlockTangentSize(add);
             if (margParBlockAddVec.find(add) != margParBlockAddVec.cend()) {
                 // this param block needs to be marg
-                evalOpt.parameter_blocks.at(margNum) = add;
-                ++margNum;
+                this->margParBlocks.emplace_back(add, size);
+                margParDime += size;
             } else {
                 // this param block needs to be kept
-                evalOpt.parameter_blocks.at(keepNum - 1) = add;
-                --keepNum;
+                this->keepParBlocks.emplace_back(add, size);
+                keepParDime += size;
             }
         }
-        // LOG_VAR(margParBlockAddVec)
         // LOG_VAR(totalParBlocksAdd)
-        // LOG_VAR(evalOpt.parameter_blocks)
-        // LOG_VAR(margNum, keepNum)
+        // LOG_VAR(margParBlockAddVec)
+        // LOG_VAR(margParBlocks)
+        // LOG_VAR(keepParBlocks)
+        // LOG_VAR(margParDime, keepParDime)
 
         // obtain JMat (jacobian matrix) and rVec (residuals vector)
+        ceres::Problem::EvaluateOptions evalOpt;
+        evalOpt.parameter_blocks.resize(totalParBlocksAdd.size());
+        for (int i = 0; i < static_cast<int>(totalParBlocksAdd.size()); ++i) {
+            if (i < static_cast<int>(margParBlocks.size())) {
+                evalOpt.parameter_blocks.at(i) = margParBlocks.at(i).first;
+            } else {
+                evalOpt.parameter_blocks.at(i) = keepParBlocks.at(i - margParBlocks.size()).first;
+            }
+        }
+
+        // LOG_VAR(evalOpt.parameter_blocks)
+
         ceres::CRSMatrix jacobianCRSMatrix;
         std::vector<double> residuals;
         this->prob->Evaluate(evalOpt, nullptr, &residuals, nullptr, &jacobianCRSMatrix);
@@ -86,7 +102,7 @@ namespace ns_ctraj {
     }
 
     void MarginalizationInfo::SchurComplement() {
-        int m = margNum, n = keepNum;
+        int m = margParDime, n = keepParDime;
 
         Eigen::MatrixXd Hmn = HMat.block(0, m, m, n);
         Eigen::MatrixXd Hnm = HMat.block(m, 0, n, m);
@@ -106,7 +122,7 @@ namespace ns_ctraj {
         // LOG_VAR(bn)
 
         Eigen::MatrixXd HmmInv = saes.eigenvectors() * Eigen::VectorXd(
-                (saes.eigenvalues().array() > eps).select(saes.eigenvalues().array().inverse(), 0)
+                (saes.eigenvalues().array() > EPS).select(saes.eigenvalues().array().inverse(), 0)
         ).asDiagonal() * saes.eigenvectors().transpose();
 
         // LOG_VAR(HmmInv)
@@ -115,9 +131,9 @@ namespace ns_ctraj {
         Eigen::VectorXd bVecSchur = bn - Hnm * HmmInv * bm;
 
         Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> saes2(AMatSchur);
-        Eigen::VectorXd S = Eigen::VectorXd((saes2.eigenvalues().array() > eps).select(saes2.eigenvalues().array(), 0));
+        Eigen::VectorXd S = Eigen::VectorXd((saes2.eigenvalues().array() > EPS).select(saes2.eigenvalues().array(), 0));
         Eigen::VectorXd SInv = Eigen::VectorXd(
-                (saes2.eigenvalues().array() > eps).select(saes2.eigenvalues().array().inverse(), 0)
+                (saes2.eigenvalues().array() > EPS).select(saes2.eigenvalues().array().inverse(), 0)
         );
 
         Eigen::VectorXd SSqrt = S.cwiseSqrt();
