@@ -18,3 +18,5 @@
 *.toc
 
 *.json
+
+vins_marginalization_*

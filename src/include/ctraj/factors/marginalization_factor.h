@@ -84,22 +84,22 @@ namespace ns_ctraj {
         void SchurComplement();
     };
 
-    class MarginalizationFactor : public ceres::CostFunction {
+    struct MarginalizationFactor {
     private:
         MarginalizationInfo::Ptr margInfo;
         double weight;
 
-    protected:
+    public:
         explicit MarginalizationFactor(MarginalizationInfo::Ptr margInfo, double weight);
 
-    public:
-        static MarginalizationFactor *
+        static ceres::DynamicNumericDiffCostFunction<MarginalizationFactor> *
         AddToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo, double weight);
 
         static std::size_t TypeHashCode();
 
     public:
-        bool Evaluate(double const *const *parBlocks, double *residuals, double **jacobians) const override;
+
+        bool operator()(double const *const *parBlocks, double *residuals) const;
     };
 }
 

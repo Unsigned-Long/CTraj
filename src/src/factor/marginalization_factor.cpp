@@ -171,30 +171,27 @@ namespace ns_ctraj {
     // ---------------------
 
     MarginalizationFactor::MarginalizationFactor(MarginalizationInfo::Ptr margInfo, double weight)
-            : margInfo(std::move(margInfo)), weight(weight) {
-        // assign param blocks for cost function
-        for (const auto &block: this->margInfo->GetKeepParBlocks()) {
-            this->mutable_parameter_block_sizes()->push_back(block.globalSize);
-        }
-        // set residuals dime
-        this->set_num_residuals(this->margInfo->GetKeepParDime());
-    }
+            : margInfo(std::move(margInfo)), weight(weight) {}
 
-    MarginalizationFactor *
-    MarginalizationFactor::AddToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo,
-                                        double weight) {
-        auto func = new MarginalizationFactor(margInfo, weight);
+    ceres::DynamicNumericDiffCostFunction<MarginalizationFactor> *
+    MarginalizationFactor::AddToProblem(ceres::Problem *prob, const MarginalizationInfo::Ptr &margInfo, double weight) {
+        auto func = new ceres::DynamicNumericDiffCostFunction<MarginalizationFactor>(
+                new MarginalizationFactor(margInfo, weight)
+        );
 
         std::vector<double *> keepParBlocksAdd;
         keepParBlocksAdd.reserve(margInfo->GetKeepParBlocks().size());
 
         // assign param blocks for cost function
         for (const auto &block: margInfo->GetKeepParBlocks()) {
+            func->AddParameterBlock(block.globalSize);
             keepParBlocksAdd.push_back(block.address);
         }
+        func->SetNumResiduals(margInfo->GetKeepParDime());
 
         // add to problem
         prob->AddResidualBlock(func, nullptr, keepParBlocksAdd);
+
         // set manifold
         for (const auto &block: margInfo->GetKeepParBlocks()) {
             // attention: problem should not own the manifolds!!!
@@ -203,20 +200,16 @@ namespace ns_ctraj {
                 prob->SetManifold(block.address, const_cast<ceres::Manifold *>(block.manifold));
             }
         }
+
         return func;
     }
 
-    std::size_t MarginalizationFactor::TypeHashCode() {
-        return typeid(MarginalizationFactor).hash_code();
-    }
-
-    bool MarginalizationFactor::Evaluate(const double *const *parBlocks, double *residuals, double **jacobians) const {
+    bool MarginalizationFactor::operator()(const double *const *parBlocks, double *residuals) const {
         // delta x
         Eigen::VectorXd dx(this->margInfo->GetKeepParDime());
 
         // parameter blocks to keep
         const auto &keepParBlocks = margInfo->GetKeepParBlocks();
-        int keepParDime = margInfo->GetKeepParDime();
 
         // for each parameter block to optimized
         for (int i = 0; i < static_cast<int>(keepParBlocks.size()); ++i) {
@@ -242,28 +235,11 @@ namespace ns_ctraj {
         Eigen::Map<Eigen::VectorXd> residual(residuals, margInfo->GetKeepParDime());
         residual = weight * (margInfo->GetLinJMat() * dx - margInfo->GetLinRVec());
 
-        if (jacobians != nullptr) {
-            for (int i = 0; i < static_cast<int>(keepParBlocks.size()); ++i) {
-                if (jacobians[i] != nullptr) {
-                    const auto &block = keepParBlocks.at(i);
-                    Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
-                            jacobian(jacobians[i], keepParDime, block.globalSize);
-                    if (block.manifold == nullptr) {
-                        // (ResNum * Size), i.e., 'globalSize' = 'localSize'
-                        jacobian = margInfo->GetLinJMat().middleCols(block.index, block.localSize);
-                    } else {
-                        // todo: big problem exists!!!
-                        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-                                minusJacobian(block.manifold->TangentSize(), block.manifold->AmbientSize());
-                        block.manifold->MinusJacobian(block.oldState.data(), minusJacobian.data());
-
-                        // (ResNum * AmbientSize) = (ResNum * TangentSize) * (TangentSize * AmbientSize)
-                        jacobian = margInfo->GetLinJMat().middleCols(block.index, block.localSize) * minusJacobian;
-                    }
-                }
-            }
-        }
         return true;
+    }
+
+    std::size_t MarginalizationFactor::TypeHashCode() {
+        return typeid(MarginalizationFactor).hash_code();
     }
 
     // -----------------------------------
