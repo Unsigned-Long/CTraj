@@ -6,11 +6,6 @@
 #include <utility>
 #include "ctraj/factors/marginalization_factor.h"
 
-#define FORMAT_VECTOR
-#define FORMAT_SET
-
-#include "artwork/logger/logger.h"
-
 namespace ns_ctraj {
 
     // -------------------
@@ -81,11 +76,6 @@ namespace ns_ctraj {
                 keepParDime += localSize;
             }
         }
-        // LOG_VAR(totalParBlocksAdd)
-        // LOG_VAR(margParBlockAddVec)
-        // LOG_VAR(margParBlocks)
-        // LOG_VAR(keepParBlocks)
-        // LOG_VAR(margParDime, keepParDime)
 
         // obtain JMat (jacobian matrix) and rVec (residuals vector)
         ceres::Problem::EvaluateOptions evalOpt;
@@ -98,19 +88,12 @@ namespace ns_ctraj {
             }
         }
 
-        // LOG_VAR(evalOpt.parameter_blocks)
-
         ceres::CRSMatrix jacobianCRSMatrix;
         std::vector<double> residuals;
         prob->Evaluate(evalOpt, nullptr, &residuals, nullptr, &jacobianCRSMatrix);
         JMat = CRSMatrix2EigenMatrix(&jacobianCRSMatrix);
         rVec = Eigen::VectorXd(residuals.size());
         for (int i = 0; i < static_cast<int>(residuals.size()); ++i) { rVec(i) = residuals.at(i); }
-
-        // LOG_VAR(JMat)
-        // LOG_VAR(JMat.transpose() * JMat)
-        // LOG_VAR(rVec)
-        // LOG_VAR(-JMat.transpose() * rVec)
 
         HMat = JMat.transpose() * JMat;
         bVec = -JMat.transpose() * rVec;
@@ -128,13 +111,6 @@ namespace ns_ctraj {
 
         Eigen::MatrixXd Hmm = 0.5 * (HMat.block(0, 0, m, m) + HMat.block(0, 0, m, m).transpose());
         Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> saes(Hmm);
-
-        // LOG_VAR(Hmm)
-        // LOG_VAR(Hmn)
-        // LOG_VAR(Hnm)
-        // LOG_VAR(Hnn)
-        // LOG_VAR(bm)
-        // LOG_VAR(bn)
 
         Eigen::MatrixXd HmmInv = saes.eigenvectors() * Eigen::VectorXd(
                 (saes.eigenvalues().array() > EPS).select(saes.eigenvalues().array().inverse(), 0)
@@ -158,12 +134,6 @@ namespace ns_ctraj {
         linJMat = SSqrt.asDiagonal() * saes2.eigenvectors().transpose();
         // JMat.t().inv() * bVec
         linRVec = SInvSqrt.asDiagonal() * saes2.eigenvectors().transpose() * bVecSchur;
-
-        // LOG_VAR(linJMat)
-        // LOG_VAR(linRVec)
-        // Eigen::MatrixXd temp = SInvSqrt.asDiagonal() * saes2.eigenvectors().transpose();
-        // LOG_VAR(temp.inverse().transpose())
-        // LOG_VAR(linJMat)
     }
 
     // ---------------------

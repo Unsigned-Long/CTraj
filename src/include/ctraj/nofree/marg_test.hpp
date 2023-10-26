@@ -8,13 +8,6 @@
 
 #include "ctraj/factors/marginalization_factor.h"
 #include "ctraj/factors/vins_marginalization_factor.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/stopwatch.h"
-
-#define FORMAT_UNORDERED_MAP
-#define FORMAT_VECTOR
-
-#include "artwork/logger/logger.h"
 
 namespace ns_ctraj {
     struct F1 {
@@ -76,106 +69,12 @@ namespace ns_ctraj {
                 problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F3, 1, 1, 1>(new F3), nullptr, &x2, &x3);
                 problem->AddResidualBlock(new ceres::AutoDiffCostFunction<F4, 1, 1, 1>(new F4), nullptr, &x1, &x4);
 
-                LOG_VAR(x1, x2, x3, x4)
-                LOG_VAR(&x1, &x2, &x3, &x4)
+                // perform solving, for example.
                 marg = MarginalizationInfo::Create(problem.get(), {&x1, &x4});
             }
             // testing
             auto problem = std::make_shared<ceres::Problem>(opt);
             auto factor = MarginalizationFactor::AddToProblem(problem.get(), marg, 1.0);
-
-            ceres::Solver::Options options;
-            options.max_num_iterations = 100;
-            options.linear_solver_type = ceres::DENSE_QR;
-            options.minimizer_progress_to_stdout = true;
-            // clang-format off
-            std::cout << "Initial x1 = " << x1
-                      << ", x2 = " << x2
-                      << ", x3 = " << x3
-                      << ", x4 = " << x4
-                      << "\n";
-            // clang-format on
-            // Run the solver!
-            ceres::Solver::Summary summary;
-            ceres::Solve(options, problem.get(), &summary);
-            // clang-format off
-            std::cout << "Final x1 = " << x1
-                      << ", x2 = " << x2
-                      << ", x3 = " << x3
-                      << ", x4 = " << x4
-                      << "\n";
-        }
-
-        static void VINSOrganizeProblem() {
-            double x1 = 3.0;
-            double x2 = -1.0;
-            double x3 = 0.0;
-            double x4 = 1.0;
-
-            MarginalizationInfo::Ptr marg;
-
-            ceres::Problem::Options opt;
-            opt.manifold_ownership = ceres::Ownership::DO_NOT_TAKE_OWNERSHIP;
-            ns_vins::MarginalizationInfo *marginalization_info = new ns_vins::MarginalizationInfo();
-
-            {
-                ns_vins::ResidualBlockInfo *residual_block_info = new ns_vins::ResidualBlockInfo(
-                        new ceres::AutoDiffCostFunction<F1, 1, 1, 1>(new F1),
-                        nullptr,
-                        {&x1, &x2},
-                        {0}
-                );
-
-                marginalization_info->addResidualBlockInfo(residual_block_info);
-            }
-            {
-                ns_vins::ResidualBlockInfo *residual_block_info = new ns_vins::ResidualBlockInfo(
-                        new ceres::AutoDiffCostFunction<F2, 1, 1, 1>(new F2),
-                        nullptr,
-                        {&x3, &x4},
-                        {1}
-                );
-
-                marginalization_info->addResidualBlockInfo(residual_block_info);
-            }
-            {
-                ns_vins::ResidualBlockInfo *residual_block_info = new ns_vins::ResidualBlockInfo(
-                        new ceres::AutoDiffCostFunction<F3, 1, 1, 1>(new F3),
-                        nullptr,
-                        {&x2, &x3},
-                        {}
-                );
-
-                marginalization_info->addResidualBlockInfo(residual_block_info);
-            }
-            {
-                ns_vins::ResidualBlockInfo *residual_block_info = new ns_vins::ResidualBlockInfo(
-                        new ceres::AutoDiffCostFunction<F4, 1, 1, 1>(new F4),
-                        nullptr,
-                        {&x1, &x4},
-                        {0, 1}
-                );
-
-                marginalization_info->addResidualBlockInfo(residual_block_info);
-            }
-            LOG_VAR(x1, x2, x3, x4)
-            LOG_VAR(&x1, &x2, &x3, &x4)
-
-            marginalization_info->preMarginalize();
-            marginalization_info->marginalize();
-            std::unordered_map<long, double *> addr_shift = {
-                    {reinterpret_cast<long>(&x1), &x1},
-                    {reinterpret_cast<long>(&x2), &x2},
-                    {reinterpret_cast<long>(&x3), &x3},
-                    {reinterpret_cast<long>(&x4), &x4}
-            };
-            auto parVec = marginalization_info->getParameterBlocks(addr_shift);
-
-            // testing
-            auto problem = std::make_shared<ceres::Problem>(opt);
-            ns_vins::MarginalizationFactor *marginalization_factor = new ns_vins::MarginalizationFactor(
-                    marginalization_info);
-            problem->AddResidualBlock(marginalization_factor, nullptr, parVec);
 
             ceres::Solver::Options options;
             options.max_num_iterations = 100;

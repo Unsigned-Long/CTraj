@@ -49,15 +49,6 @@ void TEST_TRAJECTORY() {
 
 int main() {
     // TEST_SPLINE_BUNDLE();
-    spdlog::stopwatch sw1;
-    for (int i = 0; i < 1; ++i) {
-        ns_ctraj::MargTest::OrganizeProblem();
-    }
-    spdlog::info("time cost: {}", sw1);
-    spdlog::stopwatch sw2;
-    for (int i = 0; i < 1; ++i) {
-        ns_ctraj::MargTest::VINSOrganizeProblem();
-    }
-    spdlog::info("time cost: {}", sw2);
+    ns_ctraj::MargTest::OrganizeProblem();
     return 0;
 }
