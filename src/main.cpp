@@ -49,6 +49,7 @@ void TEST_TRAJECTORY() {
 
 int main() {
     // TEST_SPLINE_BUNDLE();
-    ns_ctraj::MargTest::OrganizeProblem();
+    // ns_ctraj::MargTest::OrganizePowellProblem();
+    ns_ctraj::MargTest::IncrementalSplineFitting();
     return 0;
 }

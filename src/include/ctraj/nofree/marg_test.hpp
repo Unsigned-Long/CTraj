@@ -47,7 +47,7 @@ namespace ns_ctraj {
 
     struct MargTest {
 
-        static void OrganizeProblem() {
+        static void OrganizePowellProblem() {
             double x1 = 3.0;
             double x2 = -1.0;
             double x3 = 0.0;
@@ -73,7 +73,7 @@ namespace ns_ctraj {
             }
             // testing
             auto problem = std::make_shared<ceres::Problem>(opt);
-            auto factor = MarginalizationFactor::AddToProblem(problem.get(), marg, 1.0);
+            MarginalizationFactor::AddToProblem(problem.get(), marg, 1.0);
 
             ceres::Solver::Options options;
             options.max_num_iterations = 100;
@@ -97,6 +97,106 @@ namespace ns_ctraj {
                       << "\n";
         }
 
+        static void IncrementalSplineFitting() {
+            constexpr double sTime = 0.0;
+            constexpr double eTime = 15.0;
+
+            Eigen::aligned_vector<ns_ctraj::Posed> poseSeq;
+            for (double t = sTime; t < eTime;) {
+                ns_ctraj::Posed pose;
+                if (t > 6.0 && t < 9.0) {
+                    pose = ns_ctraj::Posed(Sophus::SO3d(), Eigen::Vector3d{t, -1.5 * t * t + 23.5 * t - 81, 0}, t);
+                } else {
+                    pose = ns_ctraj::Posed(Sophus::SO3d(), Eigen::Vector3d{t, t, 0}, t);
+                }
+                poseSeq.push_back(pose);
+                t += 0.01;
+            }
+            ns_ctraj::SavePoseSequence(poseSeq, "/home/csl/CppWorks/artwork/ctraj/output/marg/samples.json");
+
+            {
+                auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, eTime);
+                ns_ctraj::TrajectoryEstimator<3> estimator(traj);
+
+                for (const auto &pose: poseSeq) {
+                    estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                }
+
+                estimator.Solve();
+                traj->SamplingWithSaving("/home/csl/CppWorks/artwork/ctraj/output/marg/data1/curve.json", 0.01);
+                traj->Save("/home/csl/CppWorks/artwork/ctraj/output/marg/data1/knots.json");
+            }
+            {
+                auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, 6.0);
+                ns_ctraj::TrajectoryEstimator<3> estimator(traj);
+
+                for (const auto &pose: poseSeq) {
+                    estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                }
+
+                estimator.Solve();
+                traj->SamplingWithSaving("/home/csl/CppWorks/artwork/ctraj/output/marg/data2/curve.json", 0.01);
+                traj->Save("/home/csl/CppWorks/artwork/ctraj/output/marg/data2/knots.json");
+            }
+            {
+                auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, 6.0);
+                {
+                    ns_ctraj::TrajectoryEstimator<3> estimator(traj);
+                    for (const auto &pose: poseSeq) {
+                        estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                    }
+                    estimator.Solve();
+                }
+                traj->ExtendKnotsTo(eTime, {});
+                {
+                    ns_ctraj::TrajectoryEstimator<3> estimator(traj);
+                    for (const auto &pose: poseSeq) {
+                        if (pose.timeStamp < 6.0) { continue; }
+                        estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                    }
+                    estimator.Solve();
+                }
+
+                traj->SamplingWithSaving("/home/csl/CppWorks/artwork/ctraj/output/marg/data3/curve.json", 0.01);
+                traj->Save("/home/csl/CppWorks/artwork/ctraj/output/marg/data3/knots.json");
+            }
+            {
+                auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, 6.0);
+                MarginalizationInfo::Ptr marg;
+                {
+                    ns_ctraj::TrajectoryEstimator<3> estimator(traj);
+                    for (const auto &pose: poseSeq) {
+                        estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                        estimator.AddSO3Measurement(pose, ns_ctraj::OptimizationOption::OPT_SO3, 1.0);
+                    }
+                    estimator.Solve();
+                    std::set<double *> margParBlockAddVec;
+                    for (int i = 0; i < 6; ++i) {
+                        margParBlockAddVec.insert(traj->GetKnotPos(i).data());
+                        margParBlockAddVec.insert(traj->GetKnotSO3(i).data());
+                    }
+                    marg = MarginalizationInfo::Create(&estimator, margParBlockAddVec);
+                }
+                traj->ExtendKnotsTo(eTime, {});
+                {
+                    ns_ctraj::TrajectoryEstimator<3> estimator(traj);
+                    for (const auto &pose: poseSeq) {
+                        if (pose.timeStamp < 6.0) { continue; }
+                        estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                        estimator.AddSO3Measurement(pose, ns_ctraj::OptimizationOption::OPT_SO3, 1.0);
+                    }
+                    MarginalizationFactor::AddToProblem(&estimator, marg, 1.0);
+                    estimator.Solve();
+                }
+
+                traj->SamplingWithSaving("/home/csl/CppWorks/artwork/ctraj/output/marg/data4/curve.json", 0.01);
+                traj->Save("/home/csl/CppWorks/artwork/ctraj/output/marg/data4/knots.json");
+            }
+
+            // ns_ctraj::Viewer viewer;
+            // traj->Visualization(viewer);
+            // viewer.RunInSingleThread();
+        }
     };
 }
 

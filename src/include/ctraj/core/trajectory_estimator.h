@@ -74,7 +74,7 @@ namespace ns_ctraj {
     };
 
     template<int Order>
-    class TrajectoryEstimator : protected ceres::Problem {
+    class TrajectoryEstimator : public ceres::Problem {
     public:
         using Ptr = std::shared_ptr<TrajectoryEstimator>;
         using Self = TrajectoryEstimator<Order>;
