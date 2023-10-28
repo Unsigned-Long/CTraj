@@ -5,6 +5,8 @@
 
 #include <utility>
 #include "ctraj/factors/marginalization_factor.h"
+#include "cereal/archives/json.hpp"
+#include "fstream"
 
 namespace ns_ctraj {
 
@@ -13,15 +15,17 @@ namespace ns_ctraj {
     // -------------------
 
     MarginalizationInfo::MarginalizationInfo(ceres::Problem *prob,
-                                             const std::set<double *> &margParBlockAddVec)
+                                             const std::set<double *> &margParBlockAddVec,
+                                             const std::vector<double *> &consideredParBlocks)
             : margParDime(), keepParDime() {
-        this->PreMarginalization(prob, margParBlockAddVec);
+        this->PreMarginalization(prob, margParBlockAddVec, consideredParBlocks);
         this->SchurComplement();
     }
 
     MarginalizationInfo::Ptr MarginalizationInfo::Create(ceres::Problem *prob,
-                                                         const std::set<double *> &margParBlockAddVec) {
-        return std::make_shared<MarginalizationInfo>(prob, margParBlockAddVec);
+                                                         const std::set<double *> &margParBlockAddVec,
+                                                         const std::vector<double *> &consideredParBlocks) {
+        return std::make_shared<MarginalizationInfo>(prob, margParBlockAddVec, consideredParBlocks);
     }
 
     Eigen::MatrixXd MarginalizationInfo::CRSMatrix2EigenMatrix(ceres::CRSMatrix *jacobianCRSMat) {
@@ -48,10 +52,13 @@ namespace ns_ctraj {
     }
 
     void
-    MarginalizationInfo::PreMarginalization(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec) {
+    MarginalizationInfo::PreMarginalization(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
+                                            const std::vector<double *> &consideredParBlocks) {
         // obtain the total parameter blocks
         std::vector<double *> totalParBlocksAdd;
-        prob->GetParameterBlocks(&totalParBlocksAdd);
+        if (consideredParBlocks.empty()) {
+            prob->GetParameterBlocks(&totalParBlocksAdd);
+        } else { totalParBlocksAdd = consideredParBlocks; }
 
         // size <= margParBlockAddVec.size()
         this->margParBlocks.reserve(margParBlockAddVec.size());
@@ -118,10 +125,10 @@ namespace ns_ctraj {
 
         // LOG_VAR(HmmInv)
 
-        Eigen::MatrixXd AMatSchur = Hnn - Hnm * HmmInv * Hmn;
-        Eigen::VectorXd bVecSchur = bn - Hnm * HmmInv * bm;
+        HMatSchur = Hnn - Hnm * HmmInv * Hmn;
+        bVecSchur = bn - Hnm * HmmInv * bm;
 
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> saes2(AMatSchur);
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> saes2(HMatSchur);
         Eigen::VectorXd S = Eigen::VectorXd((saes2.eigenvalues().array() > EPS).select(saes2.eigenvalues().array(), 0));
         Eigen::VectorXd SInv = Eigen::VectorXd(
                 (saes2.eigenvalues().array() > EPS).select(saes2.eigenvalues().array().inverse(), 0)
@@ -227,5 +234,11 @@ namespace ns_ctraj {
         os << "address: " << info.address << " globalSize: " << info.globalSize << " localSize: " << info.localSize
            << " oldState: " << info.oldState << " index: " << info.index;
         return os;
+    }
+
+    void MarginalizationInfo::Save(const std::string &filename) const {
+        std::ofstream file(filename);
+        cereal::JSONOutputArchive ar(file);
+        ar(cereal::make_nvp("MarginalizationInfo", *this));
     }
 }

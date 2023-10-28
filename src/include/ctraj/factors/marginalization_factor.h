@@ -10,6 +10,8 @@
 #include <ostream>
 #include "ctraj/utils/eigen_utils.hpp"
 #include "ceres/ceres.h"
+#include "cereal/types/vector.hpp"
+#include "tiny-viewer/entity/utils.h"
 
 namespace ns_ctraj {
     class MarginalizationInfo {
@@ -32,10 +34,21 @@ namespace ns_ctraj {
                                   const ceres::Manifold *manifold = nullptr, int index = 0);
 
             friend std::ostream &operator<<(std::ostream &os, const ParBlockInfo &info);
+
+        public:
+            template<class Archive>
+            void save(Archive &ar) const {
+                ar(
+                        cereal::make_nvp("address", reinterpret_cast<long>(address)),
+                        CEREAL_NVP(globalSize), CEREAL_NVP(localSize),
+                        cereal::make_nvp("manifold", reinterpret_cast<long>(manifold)),
+                        CEREAL_NVP(oldState), CEREAL_NVP(index)
+                );
+            }
         };
 
     private:
-
+        constexpr static double EPS = 1E-8;
 
         // address, global size, local size
         std::vector<ParBlockInfo> margParBlocks;
@@ -50,15 +63,18 @@ namespace ns_ctraj {
         Eigen::MatrixXd HMat;
         Eigen::VectorXd bVec;
 
-        constexpr static double EPS = 1E-8;
+        Eigen::MatrixXd HMatSchur;
+        Eigen::VectorXd bVecSchur;
 
         Eigen::MatrixXd linJMat;
         Eigen::VectorXd linRVec;
 
     public:
-        explicit MarginalizationInfo(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec);
+        explicit MarginalizationInfo(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
+                                     const std::vector<double *> &consideredParBlocks = {});
 
-        static Ptr Create(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec);
+        static Ptr Create(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
+                          const std::vector<double *> &consideredParBlocks = {});
 
         [[nodiscard]] inline const std::vector<MarginalizationInfo::ParBlockInfo> &GetKeepParBlocks() const {
             return keepParBlocks;
@@ -76,12 +92,25 @@ namespace ns_ctraj {
 
         [[nodiscard]] inline const Eigen::VectorXd &GetLinRVec() const { return linRVec; }
 
+        void Save(const std::string &filename) const;
+
     protected:
         static Eigen::MatrixXd CRSMatrix2EigenMatrix(ceres::CRSMatrix *jacobianCRSMat);
 
-        void PreMarginalization(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec);
+        void PreMarginalization(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
+                                const std::vector<double *> &consideredParBlocks);
 
         void SchurComplement();
+
+    public:
+        template<class Archive>
+        void save(Archive &ar) const {
+            ar(
+                    CEREAL_NVP(margParBlocks), CEREAL_NVP(keepParBlocks), CEREAL_NVP(margParDime),
+                    CEREAL_NVP(keepParDime), CEREAL_NVP(JMat), CEREAL_NVP(rVec), CEREAL_NVP(HMat), CEREAL_NVP(bVec),
+                    CEREAL_NVP(HMatSchur), CEREAL_NVP(bVecSchur), CEREAL_NVP(linJMat), CEREAL_NVP(linRVec)
+            );
+        }
     };
 
     struct MarginalizationFactor {

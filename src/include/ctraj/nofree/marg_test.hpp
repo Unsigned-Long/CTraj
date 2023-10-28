@@ -101,6 +101,7 @@ namespace ns_ctraj {
             constexpr double sTime = 0.0;
             constexpr double eTime = 15.0;
 
+            // generate data sequence
             Eigen::aligned_vector<ns_ctraj::Posed> poseSeq;
             for (double t = sTime; t < eTime;) {
                 ns_ctraj::Posed pose;
@@ -112,14 +113,19 @@ namespace ns_ctraj {
                 poseSeq.push_back(pose);
                 t += 0.01;
             }
+            // save to disk
             ns_ctraj::SavePoseSequence(poseSeq, "/home/csl/CppWorks/artwork/ctraj/output/marg/samples.json");
 
             {
+                // --------------------------
+                // Case 1: batch optimization
+                // --------------------------
                 auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, eTime);
                 ns_ctraj::TrajectoryEstimator<3> estimator(traj);
 
                 for (const auto &pose: poseSeq) {
                     estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                    estimator.AddSO3Measurement(pose, ns_ctraj::OptimizationOption::OPT_SO3, 1.0);
                 }
 
                 estimator.Solve();
@@ -127,11 +133,37 @@ namespace ns_ctraj {
                 traj->Save("/home/csl/CppWorks/artwork/ctraj/output/marg/data1/knots.json");
             }
             {
+                // ----------------------------
+                // Case 1.1: batch optimization
+                // ----------------------------
+                auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, 10.0);
+                ns_ctraj::TrajectoryEstimator<3> estimator(traj);
+
+                for (const auto &pose: poseSeq) {
+                    estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                    estimator.AddSO3Measurement(pose, ns_ctraj::OptimizationOption::OPT_SO3, 1.0);
+                }
+
+                std::set<double *> margParBlockAddVec;
+                for (int i = 0; i < 6; ++i) {
+                    margParBlockAddVec.insert(traj->GetKnotPos(i).data());
+                    margParBlockAddVec.insert(traj->GetKnotSO3(i).data());
+                }
+
+                MarginalizationInfo::Create(&estimator, margParBlockAddVec)->Save(
+                        "/home/csl/CppWorks/artwork/ctraj/output/marg/marg.json"
+                );
+            }
+            {
+                // -------------------------------------------
+                // Case 2: batch optimization (sub data piece)
+                // -------------------------------------------
                 auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, 6.0);
                 ns_ctraj::TrajectoryEstimator<3> estimator(traj);
 
                 for (const auto &pose: poseSeq) {
                     estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                    estimator.AddSO3Measurement(pose, ns_ctraj::OptimizationOption::OPT_SO3, 1.0);
                 }
 
                 estimator.Solve();
@@ -139,11 +171,15 @@ namespace ns_ctraj {
                 traj->Save("/home/csl/CppWorks/artwork/ctraj/output/marg/data2/knots.json");
             }
             {
+                // -------------------------------------------------
+                // Case 3: incremental optimization (two data piece)
+                // -------------------------------------------------
                 auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, 6.0);
                 {
                     ns_ctraj::TrajectoryEstimator<3> estimator(traj);
                     for (const auto &pose: poseSeq) {
                         estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                        estimator.AddSO3Measurement(pose, ns_ctraj::OptimizationOption::OPT_SO3, 1.0);
                     }
                     estimator.Solve();
                 }
@@ -153,6 +189,7 @@ namespace ns_ctraj {
                     for (const auto &pose: poseSeq) {
                         if (pose.timeStamp < 6.0) { continue; }
                         estimator.AddPOSMeasurement(pose, ns_ctraj::OptimizationOption::OPT_POS, 1.0);
+                        estimator.AddSO3Measurement(pose, ns_ctraj::OptimizationOption::OPT_SO3, 1.0);
                     }
                     estimator.Solve();
                 }
@@ -161,6 +198,9 @@ namespace ns_ctraj {
                 traj->Save("/home/csl/CppWorks/artwork/ctraj/output/marg/data3/knots.json");
             }
             {
+                // ----------------------------------------------------------------------
+                // Case 3: incremental optimization with marginalization (two data piece)
+                // ----------------------------------------------------------------------
                 auto traj = ns_ctraj::Trajectory<3>::Create(1.0, sTime, 6.0);
                 MarginalizationInfo::Ptr marg;
                 {

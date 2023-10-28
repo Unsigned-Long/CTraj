@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 #include <Eigen/Dense>
+#include "tiny-viewer/entity/utils.h"
 
 namespace Eigen {
 
