@@ -8,10 +8,10 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset, zoomed_inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset, zoomed_inset_axes
 
-spline = '/home/csl/CppWorks/artwork/ctraj/output/marg/data4/curve.json'
-spline_cp = '/home/csl/CppWorks/artwork/ctraj/output/marg/data4/knots.json'
+spline = '/home/csl/CppWorks/artwork/ctraj/output/marg/data1/curve.json'
+spline_cp = '/home/csl/CppWorks/artwork/ctraj/output/marg/data1/knots.json'
 sample_file = '/home/csl/CppWorks/artwork/ctraj/output/marg/samples.json'
-fig_output = '/home/csl/CppWorks/artwork/ctraj/output/marg/data4.png'
+fig_output = '/home/csl/CppWorks/artwork/ctraj/output/marg/data1.png'
 
 colors = [
     '#ee1d23', '#3b4ba8', '#231f20', '#b935a2'
@@ -112,8 +112,8 @@ def draw_plot(ax, x, y, color, label=None, alpha=0.6):
     ax.plot(x, y, c=color, lw=4, label=label, alpha=alpha)
 
 
-def draw_scatter(ax, x, y, color, label=None):
-    ax.scatter(x, y, c=color, label=label, alpha=1, s=100, zorder=100)
+def draw_scatter(ax, x, y, color, s=100, label=None):
+    ax.scatter(x, y, c=color, label=label, alpha=1, s=s, zorder=100)
 
 
 def add_arrow(ax, x, y, color):
@@ -135,14 +135,13 @@ if __name__ == '__main__':
 
     samples = load_samples(sample_file)
 
-    draw_plot(axs, [elem[0] for elem in vel_seq], [elem[1]
-                                                   for elem in vel_seq], color=colors[0], label='curve')
-    draw_plot(axs, [elem[0] for elem in samples], [elem[1]
-                                                   for elem in samples], color=colors[2], label='samples')
-    draw_scatter(axs, [elem[0] for elem in vel_knots], [elem[1]
-                                                        for elem in vel_knots], color=colors[1], label='knots')
-    add_arrow(axs, [elem[0] for elem in vel_knots], [elem[1]
-                                                     for elem in vel_knots], color=colors[1])
+    draw_plot(axs, [elem[0] for elem in vel_seq], [elem[1] for elem in vel_seq], color=colors[0], label='curve')
+
+    axs.scatter([elem[0] for elem in samples], [elem[1] for elem in samples],
+                c='g', label='samples', alpha=0.5, s=40, zorder=100, marker='s')
+
+    draw_scatter(axs, [elem[0] for elem in vel_knots], [elem[1] for elem in vel_knots], color=colors[1], label='knots')
+    add_arrow(axs, [elem[0] for elem in vel_knots], [elem[1] for elem in vel_knots], color=colors[1])
 
     vel_axins = zoomed_inset_axes(axs, zoom=2.5, loc='lower right')
     # fix the number of ticks on the inset axes
@@ -150,14 +149,14 @@ if __name__ == '__main__':
     vel_axins.xaxis.get_major_locator().set_params(nbins=7)
     vel_axins.tick_params(labelleft=False, labelbottom=False)
 
-    draw_plot(vel_axins, [elem[0] for elem in vel_seq], [elem[1]
-                                                         for elem in vel_seq], color=colors[0], label='curve')
-    draw_plot(vel_axins, [elem[0] for elem in samples], [elem[1]
-                                                         for elem in samples], color=colors[2], label='samples')
-    draw_scatter(vel_axins, [elem[0] for elem in vel_knots], [elem[1]
-                                                              for elem in vel_knots], color=colors[1], label='knots')
-    add_arrow(vel_axins, [elem[0] for elem in vel_knots], [elem[1]
-                                                           for elem in vel_knots], color=colors[1])
+    draw_plot(vel_axins, [elem[0] for elem in vel_seq], [elem[1] for elem in vel_seq], color=colors[0], label='curve')
+
+    vel_axins.scatter([elem[0] for elem in samples], [elem[1] for elem in samples],
+                      c='g', label='samples', alpha=0.5, s=40, zorder=100, marker='s')
+
+    draw_scatter(vel_axins, [elem[0] for elem in vel_knots], [elem[1] for elem in vel_knots], color=colors[1],
+                 label='knots')
+    add_arrow(vel_axins, [elem[0] for elem in vel_knots], [elem[1] for elem in vel_knots], color=colors[1])
 
     vel_axins.set_xlim(-0.0, 3.0)
     vel_axins.set_ylim(-0.0, 3.0)

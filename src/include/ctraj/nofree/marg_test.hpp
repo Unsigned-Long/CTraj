@@ -111,7 +111,7 @@ namespace ns_ctraj {
                     pose = ns_ctraj::Posed(Sophus::SO3d(), Eigen::Vector3d{t, t, 0}, t);
                 }
                 poseSeq.push_back(pose);
-                t += 0.01;
+                t += 0.2;
             }
             // save to disk
             ns_ctraj::SavePoseSequence(poseSeq, "/home/csl/CppWorks/artwork/ctraj/output/marg/samples.json");
