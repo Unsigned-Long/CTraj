@@ -58,7 +58,14 @@ namespace ns_ctraj {
         std::vector<double *> totalParBlocksAdd;
         if (consideredParBlocks.empty()) {
             prob->GetParameterBlocks(&totalParBlocksAdd);
-        } else { totalParBlocksAdd = consideredParBlocks; }
+        } else {
+            totalParBlocksAdd = consideredParBlocks;
+            // remove parameter blocks that are not involved in this problem
+            auto iter = std::remove_if(totalParBlocksAdd.begin(), totalParBlocksAdd.end(), [prob](double *address) {
+                return !prob->HasParameterBlock(address);
+            });
+            totalParBlocksAdd.erase(iter, totalParBlocksAdd.cend());
+        }
 
         // size <= margParBlockAddVec.size()
         this->margParBlocks.reserve(margParBlockAddVec.size());
