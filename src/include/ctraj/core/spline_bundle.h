@@ -84,11 +84,11 @@ namespace ns_ctraj {
             return bundle;
         }
 
-        const So3SplineType &GetSo3Spline(const std::string &name) const {
+        So3SplineType &GetSo3Spline(const std::string &name) {
             return _so3Splines.at(name);
         }
 
-        const RdSplineType &GetRdSpline(const std::string &name) const {
+        RdSplineType &GetRdSpline(const std::string &name) {
             return _rdSplines.at(name);
         }
 
