@@ -21,10 +21,10 @@ namespace ns_ctraj {
         this->SchurComplement();
     }
 
-    MarginalizationInfo::Ptr MarginalizationInfo::Create(ceres::Problem *prob,
-                                                         const std::set<double *> &margParBlockAddVec,
-                                                         const std::vector<double *> &consideredParBlocks) {
-        return std::make_shared<MarginalizationInfo>(prob, margParBlockAddVec, consideredParBlocks);
+    MarginalizationInfo::Ptr
+    MarginalizationInfo::Create(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
+                                const std::vector<double *> &consideredParBlocks, int numThreads) {
+        return std::make_shared<MarginalizationInfo>(prob, margParBlockAddVec, consideredParBlocks, numThreads);
     }
 
     Eigen::MatrixXd MarginalizationInfo::CRSMatrix2EigenMatrix(ceres::CRSMatrix *jacobianCRSMat) {

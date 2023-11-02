@@ -74,7 +74,7 @@ namespace ns_ctraj {
                                      const std::vector<double *> &consideredParBlocks = {}, int numThreads = 1);
 
         static Ptr Create(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
-                          const std::vector<double *> &consideredParBlocks = {});
+                          const std::vector<double *> &consideredParBlocks = {}, int numThreads = 1);
 
         [[nodiscard]] inline const std::vector<MarginalizationInfo::ParBlockInfo> &GetKeepParBlocks() const {
             return keepParBlocks;
