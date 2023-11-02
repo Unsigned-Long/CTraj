@@ -3,20 +3,12 @@
 #  the school of Geodesy and Geomatics, Wuhan University. His area of research currently focuses on integrated navigation
 #  systems and multi-sensor fusion.
 
+import argparse
 from plt_utils import drawer
 from helper import get_array_fields
 import matplotlib.pyplot as plt
-import json
-from matplotlib.patches import Circle
-from matplotlib.patheffects import withStroke
-from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-from mpl_toolkits.axes_grid1.inset_locator import mark_inset, zoomed_inset_axes
-from mpl_toolkits.axes_grid1.inset_locator import mark_inset, zoomed_inset_axes
 import numpy as np
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-
-filename = '/home/csl/CppWorks/artwork/ctraj/output/marg/marg.json'
-save_path = '/home/csl/CppWorks/artwork/ctraj/output/marg/marg.png'
+from matplotlib.colors import ListedColormap
 
 # ['PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdBu', 'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic']
 color_name = 'PuOr'
@@ -155,7 +147,13 @@ def draw_equ_marg(ax, equation, keep_size):
 
 
 if __name__ == '__main__':
-    data = get_array_fields(filename, ['MarginalizationInfo'])
+    parser = argparse.ArgumentParser(description='Marginalization Drawer')
+    parser.add_argument('filename', type=str, help='the path of the marginalization file to drawer')
+    args = parser.parse_args()
+
+    marg_filename = args.filename
+
+    data = get_array_fields(marg_filename, ['MarginalizationInfo'])
     margParBlocks = data['margParBlocks']
     keepParBlocks = data['keepParBlocks']
 
@@ -196,4 +194,4 @@ if __name__ == '__main__':
 
     draw_equ_marg(axs[1], equation, keep_size)
 
-    drawer.show_figure(save_path)
+    drawer.show_figure()

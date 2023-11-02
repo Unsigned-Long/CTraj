@@ -70,11 +70,11 @@ if __name__ == '__main__':
     parser.add_argument('--scale', type=float, help='the scale size of the coordinates', default=0.3)
     args = parser.parse_args()
 
-    traj_filenames = args.filename
+    traj_filename = args.filename
     down_sample = args.sample
     scale = args.scale
 
-    traj = load_trajectory(traj_filenames, down_sample)
+    traj = load_trajectory(traj_filename, down_sample)
 
     x_min = np.min([elem[1][0] for elem in traj])
     x_max = np.max([elem[1][0] for elem in traj])
