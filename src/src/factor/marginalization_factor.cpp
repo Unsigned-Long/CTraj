@@ -14,11 +14,10 @@ namespace ns_ctraj {
     // MarginalizationInfo
     // -------------------
 
-    MarginalizationInfo::MarginalizationInfo(ceres::Problem *prob,
-                                             const std::set<double *> &margParBlockAddVec,
-                                             const std::vector<double *> &consideredParBlocks)
+    MarginalizationInfo::MarginalizationInfo(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
+                                             const std::vector<double *> &consideredParBlocks, int numThreads)
             : margParDime(), keepParDime() {
-        this->PreMarginalization(prob, margParBlockAddVec, consideredParBlocks);
+        this->PreMarginalization(prob, margParBlockAddVec, consideredParBlocks, numThreads);
         this->SchurComplement();
     }
 
@@ -53,7 +52,7 @@ namespace ns_ctraj {
 
     void
     MarginalizationInfo::PreMarginalization(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
-                                            const std::vector<double *> &consideredParBlocks) {
+                                            const std::vector<double *> &consideredParBlocks, int numThreads) {
         // obtain the total parameter blocks
         std::vector<double *> totalParBlocksAdd;
         if (consideredParBlocks.empty()) {
@@ -94,6 +93,7 @@ namespace ns_ctraj {
         // obtain JMat (jacobian matrix) and rVec (residuals vector)
         ceres::Problem::EvaluateOptions evalOpt;
         evalOpt.parameter_blocks.resize(totalParBlocksAdd.size());
+        evalOpt.num_threads = numThreads;
         for (int i = 0; i < static_cast<int>(totalParBlocksAdd.size()); ++i) {
             if (i < static_cast<int>(margParBlocks.size())) {
                 evalOpt.parameter_blocks.at(i) = margParBlocks.at(i).address;

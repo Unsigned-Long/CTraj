@@ -71,7 +71,7 @@ namespace ns_ctraj {
 
     public:
         explicit MarginalizationInfo(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
-                                     const std::vector<double *> &consideredParBlocks = {});
+                                     const std::vector<double *> &consideredParBlocks = {}, int numThreads = 1);
 
         static Ptr Create(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
                           const std::vector<double *> &consideredParBlocks = {});
@@ -98,7 +98,7 @@ namespace ns_ctraj {
         static Eigen::MatrixXd CRSMatrix2EigenMatrix(ceres::CRSMatrix *jacobianCRSMat);
 
         void PreMarginalization(ceres::Problem *prob, const std::set<double *> &margParBlockAddVec,
-                                const std::vector<double *> &consideredParBlocks);
+                                const std::vector<double *> &consideredParBlocks, int numThreads);
 
         void SchurComplement();
 
