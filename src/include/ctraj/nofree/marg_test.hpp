@@ -70,6 +70,7 @@ namespace ns_ctraj {
 
                 // perform solving, for example.
                 marg = MarginalizationInfo::Create(problem.get(), {&x1, &x4});
+                // marg = MarginalizationInfo::Create(problem.get(), {});
             }
             // testing
             auto problem = std::make_shared<ceres::Problem>(opt);
@@ -216,6 +217,7 @@ namespace ns_ctraj {
                         margParBlockAddVec.insert(traj->GetKnotSO3(i).data());
                     }
                     marg = MarginalizationInfo::Create(&estimator, margParBlockAddVec);
+                    // marg = MarginalizationInfo::Create(&estimator, {});
                 }
                 traj->ExtendKnotsTo(eTime, {});
                 {

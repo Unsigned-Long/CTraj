@@ -116,24 +116,31 @@ namespace ns_ctraj {
     void MarginalizationInfo::SchurComplement() {
         int m = margParDime, n = keepParDime;
 
-        Eigen::MatrixXd Hmn = HMat.block(0, m, m, n);
-        Eigen::MatrixXd Hnm = HMat.block(m, 0, n, m);
-        Eigen::MatrixXd Hnn = HMat.block(m, m, n, n);
+        if (m != 0) {
+            Eigen::MatrixXd Hmn = HMat.block(0, m, m, n);
+            Eigen::MatrixXd Hnm = HMat.block(m, 0, n, m);
+            Eigen::MatrixXd Hnn = HMat.block(m, m, n, n);
 
-        Eigen::VectorXd bm = bVec.segment(0, m);
-        Eigen::VectorXd bn = bVec.segment(m, n);
+            Eigen::VectorXd bm = bVec.segment(0, m);
+            Eigen::VectorXd bn = bVec.segment(m, n);
 
-        Eigen::MatrixXd Hmm = 0.5 * (HMat.block(0, 0, m, m) + HMat.block(0, 0, m, m).transpose());
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> saes(Hmm);
+            Eigen::MatrixXd Hmm = 0.5 * (HMat.block(0, 0, m, m) + HMat.block(0, 0, m, m).transpose());
+            Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> saes(Hmm);
 
-        Eigen::MatrixXd HmmInv = saes.eigenvectors() * Eigen::VectorXd(
-                (saes.eigenvalues().array() > EPS).select(saes.eigenvalues().array().inverse(), 0)
-        ).asDiagonal() * saes.eigenvectors().transpose();
+            Eigen::MatrixXd HmmInv = saes.eigenvectors() * Eigen::VectorXd(
+                    (saes.eigenvalues().array() > EPS).select(saes.eigenvalues().array().inverse(), 0)
+            ).asDiagonal() * saes.eigenvectors().transpose();
 
-        // LOG_VAR(HmmInv)
-
-        HMatSchur = Hnn - Hnm * HmmInv * Hmn;
-        bVecSchur = bn - Hnm * HmmInv * bm;
+            HMatSchur = Hnn - Hnm * HmmInv * Hmn;
+            bVecSchur = bn - Hnm * HmmInv * bm;
+        } else {
+            // if no parameter blocks to be marginalized, this marginalization factor would become a prior factor
+            // not that such prior factor would introduce linearization error
+            Eigen::MatrixXd Hnn = HMat.block(m, m, n, n);
+            Eigen::VectorXd bn = bVec.segment(m, n);
+            HMatSchur = Hnn;
+            bVecSchur = bn;
+        }
 
         Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> saes2(HMatSchur);
         Eigen::VectorXd S = Eigen::VectorXd((saes2.eigenvalues().array() > EPS).select(saes2.eigenvalues().array(), 0));
