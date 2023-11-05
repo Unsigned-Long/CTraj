@@ -59,9 +59,9 @@ namespace ns_ctraj {
         bool ComputeTIndex(const T &timestamp, T &u, size_t &s) const {
             T t = timestamp;
             if (timestamp >= T(MaxTime()))
-                t = timestamp - T(1e-9);  // 1ns
+                t = timestamp - T(1E-6);  // 1us
             else if (timestamp < T(MinTime()))
-                t = timestamp + T(1e-9);
+                t = timestamp + T(1E-6);
 
             if (t >= T(MinTime()) && t < T(MaxTime())) {
                 T st = (t - T(t0)) / T(dt);

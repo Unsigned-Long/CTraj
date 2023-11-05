@@ -266,8 +266,8 @@ namespace ns_ctraj {
 
             // for each segment
             for (const auto &seg: splineMeta.segments) {
-                // the factor '1E-9' is the treatment of numerical accuracy
-                auto idxMaster = _trajectory->ComputeTIndex(seg.t0 + 1E-9).second;
+                // the factor '1E-6' is the treatment of numerical accuracy
+                auto idxMaster = _trajectory->ComputeTIndex(seg.t0 + 1E-6).second;
 
                 // from the first control point to the last control point
                 for (std::size_t i = idxMaster; i < idxMaster + seg.NumParameters(); ++i) {
