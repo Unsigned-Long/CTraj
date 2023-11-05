@@ -125,7 +125,6 @@ namespace ns_ctraj {
             CalculateSplineMeta(_rdSplines.at(name), times, splineMeta);
         }
 
-    protected:
         template<class SplineType, class KnotType>
         static void ExtendKnotsTo(SplineType &spline, double t, const KnotType &init) {
             while ((spline.GetKnots().size() < N) || (spline.MaxTime() < t)) {
