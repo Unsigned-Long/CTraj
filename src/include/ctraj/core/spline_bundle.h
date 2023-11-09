@@ -104,6 +104,12 @@ namespace ns_ctraj {
             return time >= spline.MinTime() + 1E-6 && time < spline.MaxTime() - 1E-6;
         }
 
+        template<class SplineType>
+        bool TimeInRange(double time, const SplineType &spline) {
+            // left closed right open interval
+            return time >= spline.MinTime() + 1E-6 && time < spline.MaxTime() - 1E-6;
+        }
+
         friend ostream &operator<<(ostream &os, const SplineBundle &bundle) {
             os << "SplineBundle:\n";
             for (const auto &[name, spline]: bundle._so3Splines) {
