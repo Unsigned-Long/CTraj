@@ -95,13 +95,13 @@ namespace ns_ctraj {
         bool TimeInRangeForSo3(double time, const std::string &name) {
             // left closed right open interval
             auto &spline = _so3Splines.at(name);
-            return time >= spline.MinTime() && time < spline.MaxTime();
+            return time >= spline.MinTime() + 1E-6 && time < spline.MaxTime() - 1E-6;
         }
 
         bool TimeInRangeForRd(double time, const std::string &name) {
             // left closed right open interval
             auto &spline = _rdSplines.at(name);
-            return time >= spline.MinTime() && time < spline.MaxTime();
+            return time >= spline.MinTime() + 1E-6 && time < spline.MaxTime() - 1E-6;
         }
 
         friend ostream &operator<<(ostream &os, const SplineBundle &bundle) {

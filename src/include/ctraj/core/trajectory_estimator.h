@@ -143,6 +143,11 @@ namespace ns_ctraj {
             return summary;
         }
 
+        bool TimeInRange(double time) {
+            // left closed right open interval
+            return _trajectory->TimeStampInRange(time);
+        }
+
     public:
         /**
          * different type optimize targets
@@ -266,8 +271,8 @@ namespace ns_ctraj {
 
             // for each segment
             for (const auto &seg: splineMeta.segments) {
-                // the factor '1E-6' is the treatment of numerical accuracy
-                auto idxMaster = _trajectory->ComputeTIndex(seg.t0 + 1E-6).second;
+                // the factor '+ seg.dt * 0.5' is the treatment of numerical accuracy
+                auto idxMaster = _trajectory->ComputeTIndex(seg.t0 + seg.dt * 0.5).second;
 
                 // from the first control point to the last control point
                 for (std::size_t i = idxMaster; i < idxMaster + seg.NumParameters(); ++i) {
