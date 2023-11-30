@@ -94,6 +94,10 @@ namespace ns_ctraj {
 
         void Save(const std::string &filename) const;
 
+        void ShiftKeepParBlockAddress(const std::map<double *, double *> &oldToNew);
+
+        void ShiftMargParBlockAddress(const std::map<double *, double *> &oldToNew);
+
     protected:
         static Eigen::MatrixXd CRSMatrix2EigenMatrix(ceres::CRSMatrix *jacobianCRSMat);
 

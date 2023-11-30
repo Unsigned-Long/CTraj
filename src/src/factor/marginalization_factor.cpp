@@ -157,6 +157,24 @@ namespace ns_ctraj {
         linRVec = SInvSqrt.asDiagonal() * saes2.eigenvectors().transpose() * bVecSchur;
     }
 
+    void MarginalizationInfo::ShiftKeepParBlockAddress(const std::map<double *, double *> &oldToNew) {
+        for (auto &par: keepParBlocks) {
+            // if we find this block, then update the address of this parameter block
+            if (auto iter = oldToNew.find(par.address);iter != oldToNew.cend()) {
+                par.address = iter->second;
+            }
+        }
+    }
+
+    void MarginalizationInfo::ShiftMargParBlockAddress(const std::map<double *, double *> &oldToNew) {
+        for (auto &par: margParBlocks) {
+            // if we find this block, then update the address of this parameter block
+            if (auto iter = oldToNew.find(par.address);iter != oldToNew.cend()) {
+                par.address = iter->second;
+            }
+        }
+    }
+
     // ---------------------
     // MarginalizationFactor
     // ---------------------
