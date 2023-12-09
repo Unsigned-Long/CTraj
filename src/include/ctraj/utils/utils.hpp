@@ -9,17 +9,6 @@
 #include "eigen_utils.hpp"
 #include "ctraj/core/pose.hpp"
 
-template<class Archive>
-void serialize(Archive &archive, double *m) {
-    // a vector expression of the coefficients (x,y,z,w)
-//    archive(
-//            cereal::make_nvp("qx", m.data()[0]),
-//            cereal::make_nvp("qy", m.data()[1]),
-//            cereal::make_nvp("qz", m.data()[2]),
-//            cereal::make_nvp("qw", m.data()[3])
-//    );
-}
-
 namespace ns_ctraj {
     template<typename ScaleType>
     static Eigen::Matrix<ScaleType, 3, 1> XYZtoRTP(const Eigen::Matrix<ScaleType, 3, 1> &xyz) {

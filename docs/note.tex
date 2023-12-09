@@ -62,6 +62,19 @@
 \newcommand\mlcomment[1]{\iffalse #1 \fi}
 %\newcommand\mlcomment[1]{ #1 }
 
+\newcommand\bsm[1]{\boldsymbol{\mathrm{#1}}}
+\newcommand\rotation[2]{{\bsm{R}_{#1}^{#2}}}
+\newcommand\quaternion[2]{{\bsm{q}_{#1}^{#2}}}
+\newcommand\angvel[2]{{\bsm{\omega}_{#1}^{#2}}}
+\newcommand\translation[2]{{\bsm{p}_{#1}^{#2}}}
+\newcommand\translationhat[2]{{\hat{\bsm{p}}_{#1}^{#2}}}
+\newcommand\linvel[2]{{\bsm{v}_{#1}^{#2}}}
+\newcommand\linacce[2]{{\bsm{a}_{#1}^{#2}}}
+\newcommand\gravity[1]{{\bsm{g}^{#1}}}
+\newcommand\smallminus{{\text{-}}}
+\newcommand\smallplus{{\text{+}}}
+\newcommand\coordframe[1]{\underrightarrow{\mathcal{F}}_{#1}}
+
 \begin{document}
 	
 	% 插入头部信息
@@ -153,8 +166,141 @@
 	\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top}\cdot{^{b_0}\dot{\boldsymbol{p}}_r(\tau)}=-\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{r}\dot{\boldsymbol{p}}_t(\tau)}
 	\end{equation}
 	
-	
-	
+	\section{\normf Preintegration}
+	\normf
+	IMU的坐标系记为$\coordframe{b}$，世界坐标系记为$\coordframe{w}$，则有：
+	\begin{equation}
+	\begin{aligned}
+	\bsm{a}_\tau&=\rotation{b_\tau}{w} ^\top\cdot\left(
+	\linacce{b_\tau}{w}-\gravity{w}
+	\right) 
+	\\
+	\bsm{\omega}_\tau&=\rotation{b_\tau}{w} ^\top\cdot\angvel{b_\tau}{w}
+	\end{aligned}
+	\end{equation}
+	通过变换，得到：
+	\begin{equation}
+	\begin{aligned}
+	\linacce{b_\tau}{w}&=\rotation{b_\tau}{w} \cdot \bsm{a}_\tau+\gravity{w}
+	\\
+	\angvel{b_\tau}{w}&=\rotation{b_\tau}{w}\cdot\bsm{\omega}_\tau
+	\end{aligned}
+	\end{equation}
+	通过积分得到：
+	\begin{equation}
+	\begin{aligned}
+		\linvel{b_{k+1}}{w}&=\linvel{b_{k}}{w}+\gravity{w}\cdot\Delta\tau
+		+\int_{\tau_{k}}^{\tau_{k+1}}
+		\rotation{b_t}{w} \cdot \bsm{a}_t \cdot dt
+		\\
+		\translation{b_{k+1}}{w}&=\translation{b_{k}}{w}
+		+\linvel{b_{k}}{w}\cdot\Delta\tau
+		+\frac{1}{2}\cdot\gravity{w}\cdot\Delta\tau^2+\iint_{\tau_{k}}^{\tau_{k+1}}
+		\rotation{b_t}{w} \cdot \bsm{a}_t \cdot dt^2
+		\\
+		\quaternion{b_{k+1}}{w}&=\quaternion{b_k}{w}\circ
+		 \int_{\tau_{k}}^{\tau_{k+1}}\frac{1}{2}\cdot\boldsymbol{\Omega}(\bsm{\omega}_t)\cdot\quaternion{b_t}{b_k}\cdot dt
+	\end{aligned}
+	\end{equation}
+	其中：
+	\begin{equation}
+	\boldsymbol{\Omega}(\bsm{\omega}_t)=\begin{bmatrix}
+	-\liehat{\bsm{\omega}_t} & \bsm{\omega}_t\\
+	-\bsm{\omega}_t^\top & 0
+	\end{bmatrix}
+	\end{equation}
+	将参考坐标系变换到$\coordframe{b_k}$，得到：
+	\begin{equation}
+	\begin{aligned}
+		\rotation{b_{k}}{w}^\top\cdot\linvel{b_{k+1}}{w}&=\rotation{b_{k}}{w}^\top\cdot\left( \linvel{b_{k}}{w}+\gravity{w}\cdot\Delta\tau\right) 
+		+\int_{\tau_{k}}^{\tau_{k+1}}
+		\rotation{b_t}{b_{k}} \cdot \bsm{a}_t \cdot dt
+		\\
+		\rotation{b_{k}}{w}^\top\cdot\translation{b_{k+1}}{w}&=\rotation{b_{k}}{w}^\top\cdot\left( \translation{b_{k}}{w}
+		+\linvel{b_{k}}{w}\cdot\Delta\tau
+		+\frac{1}{2}\cdot\gravity{w}\cdot\Delta\tau^2\right) +\iint_{\tau_{k}}^{\tau_{k+1}}
+		\rotation{b_t}{b_{k}} \cdot \bsm{a}_t \cdot dt^2
+		\\
+		\left( \quaternion{b_k}{w}\right) ^{-1}\circ\quaternion{b_{k+1}}{w}&=
+		 \int_{\tau_{k}}^{\tau_{k+1}}\frac{1}{2}\cdot\boldsymbol{\Omega}(\bsm{\omega}_t)\cdot\quaternion{b_t}{b_k}\cdot dt
+	\end{aligned}
+	\end{equation}
+	得到预积分项，并带入带有噪声的观测值：
+	\begin{equation}
+	\begin{aligned}
+	\bsm{\alpha}_{b_{k+1}}^{b_k}&=\iint_{\tau_{k}}^{\tau_{k+1}}
+				\rotation{b_t}{b_{k}} \cdot \left( \hat{\bsm{a}}_t-\bsm{b}_{a_t}-\bsm{n}_a\right) \cdot dt^2
+				\\
+	\bsm{\beta}_{b_{k+1}}^{b_k}&=\int_{\tau_{k}}^{\tau_{k+1}}
+			\rotation{b_t}{b_{k}} \cdot \left( \hat{\bsm{a}}_t-\bsm{b}_{a_t}-\bsm{n}_a\right)  \cdot dt
+			\\
+	\bsm{\gamma}_{b_{k+1}}^{b_k}&=\int_{\tau_{k}}^{\tau_{k+1}}\frac{1}{2}\cdot\boldsymbol{\Omega}(\hat{\bsm{\omega}}_t-\bsm{b}_{g_t}-\bsm{n}_g)\cdot\quaternion{b_t}{b_k}\cdot dt
+	\end{aligned}
+	\end{equation}
+	数值积分使用midpoint进行：
+	\begin{equation}
+	\begin{aligned}
+	\bsm{\alpha}_{b_{j+1}}^{b_k}&=\bsm{\alpha}_{b_{j}}^{b_k}+\bsm{\beta}_{b_{j}}^{b_k}\cdot\delta \tau+\frac{1}{2}\cdot\rotation{b_j}{b_k}\cdot\left( \hat{\bsm{a}}_j-\bsm{b}_{a_j}\right) \cdot\delta \tau^2
+	\\
+	\bsm{\beta}_{b_{j+1}}^{b_k}&=\bsm{\beta}_{b_{j}}^{b_k}+\rotation{b_j}{b_k}\cdot\left( \hat{\bsm{a}}_j-\bsm{b}_{a_j}\right) \cdot\delta \tau
+	\\
+	\bsm{\gamma}_{b_{j+1}}^{b_k}&=\bsm{\gamma}_{b_{j}}^{b_k}\circ\begin{bmatrix}
+	1\\\begin{aligned}
+	\frac{1}{2}\cdot\left(\hat{\bsm{\omega}}_j-\bsm{b}_{g_j} \right) \cdot\delta \tau
+	\end{aligned}
+	\end{bmatrix}
+	\end{aligned}
+	\end{equation}
+	推导方差传播模型：
+	\begin{equation}
+	\begin{bmatrix}
+	\delta\dot{\bsm{\alpha}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{\beta}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{\theta}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{b}}_{a_{t}}
+	\\
+	\delta\dot{\bsm{b}}_{g_{t}}
+	\end{bmatrix}=
+	\begin{bmatrix}
+	0&\bsm{I}_3&0&0&0\\
+	0&0&-\rotation{b_t}{b_{k}}\cdot\liehat{\hat{\bsm{a}}_t-\bsm{b}_{a_t}}&-\rotation{b_t}{b_{k}}&0\\
+	0&0&-\liehat{\hat{\bsm{\omega}}_t-\bsm{b}_{g_t}}&0&-\bsm{I}_3\\
+	0&0&0&0&0\\0&0&0&0&0
+	\end{bmatrix}
+	\begin{bmatrix}
+	\delta{\bsm{\alpha}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{\beta}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{\theta}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{b}}_{a_{t}}
+	\\
+	\delta{\bsm{b}}_{g_{t}}
+	\end{bmatrix}+
+	\begin{bmatrix}
+	0&0&0&0\\
+	-\rotation{b_t}{b_{k}}&0&0&0\\
+	0&-\bsm{I}_3&0&0\\
+	0&0&\bsm{I}_3&0\\
+	0&0&0&\bsm{I}_3
+	\end{bmatrix}\begin{bmatrix}
+	\bsm{n}_a\\\bsm{n}_g\\\bsm{n}_{b_a}\\\bsm{n}_{b_g}
+	\end{bmatrix}=\bsm{F}_t\delta\bsm{z}^{b_k}_{t}+\bsm{G}_{t}\bsm{n}_{t}
+	\end{equation}
+	注意，对旋转矩阵的求导为右扰动，所以对应的姿态更新为：
+	\begin{equation}
+	\bsm{\gamma}_{b_{t}}^{b_k}=\bsm{\gamma}_{b_{t}}^{b_k}\circ\delta\bsm{\gamma}
+	\end{equation}
+	进行离散化，得到：
+	\begin{equation}
+	\bsm{z}^{b_k}_{t_2}=\left( \bsm{I}_5+\bsm{F}_t\cdot\delta\tau\right)\cdot\bsm{z}^{b_k}_{t_1} +
+	\int_{0}^{\delta \tau}\bsm{F}_t\cdot\bsm{G}_t\cdot\bsm{Q}\cdot\bsm{G}_t^\top\cdot\bsm{F}_t^\top
+	\end{equation}
+	之后进行滤波即可。
 	
 	
 	
