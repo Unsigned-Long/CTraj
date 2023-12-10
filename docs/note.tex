@@ -301,7 +301,45 @@
 	\int_{0}^{\delta \tau}\bsm{F}_t\cdot\bsm{G}_t\cdot\bsm{Q}\cdot\bsm{G}_t^\top\cdot\bsm{F}_t^\top
 	\end{equation}
 	之后进行滤波即可。
-	
+	\begin{equation}
+	\begin{bmatrix}
+	\delta\dot{\bsm{\alpha}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{\theta}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{\beta}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{b}}_{a_{t}}
+	\\
+	\delta\dot{\bsm{b}}_{g_{t}}
+	\end{bmatrix}=
+	\begin{bmatrix}
+	0&0&\bsm{I}_3&0&0\\
+	0&-\liehat{\hat{\bsm{\omega}}_t-\bsm{b}_{g_t}}&0&0&-\bsm{I}_3\\
+	0&-\rotation{b_t}{b_{k}}\cdot\liehat{\hat{\bsm{a}}_t-\bsm{b}_{a_t}}&0&-\rotation{b_t}{b_{k}}&0\\
+	0&0&0&0&0\\0&0&0&0&0
+	\end{bmatrix}
+	\begin{bmatrix}
+	\delta{\bsm{\alpha}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{\theta}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{\beta}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{b}}_{a_{t}}
+	\\
+	\delta{\bsm{b}}_{g_{t}}
+	\end{bmatrix}+
+	\begin{bmatrix}
+	0&0&0&0\\
+	-\rotation{b_t}{b_{k}}&0&0&0\\
+	0&-\bsm{I}_3&0&0\\
+	0&0&\bsm{I}_3&0\\
+	0&0&0&\bsm{I}_3
+	\end{bmatrix}\begin{bmatrix}
+	\bsm{n}_a\\\bsm{n}_g\\\bsm{n}_{b_a}\\\bsm{n}_{b_g}
+	\end{bmatrix}
+	\end{equation}
 	
 	
 	

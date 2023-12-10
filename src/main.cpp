@@ -5,6 +5,7 @@
 #include "ctraj/core/simu_trajectory.h"
 #include "ctraj/core/spline_bundle.h"
 #include "ctraj/nofree/marg_test.hpp"
+#include "ctraj/core/preintegration.h"
 
 void TEST_SPLINE_BUNDLE() {
     using namespace ns_ctraj;
