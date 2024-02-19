@@ -15,11 +15,19 @@
 #include "ctraj/spline/spline_segment.h"
 
 namespace ns_ctraj {
+    // b-splines that live on the vector space (Rd) or manifold of Lie Group (So3)
     enum class SplineType {
         RdSpline, So3Spline
     };
 
     struct SplineInfo {
+        /**
+         * @brief name: the name of spline, as a search key for access in spline bundle
+         * @brief type: the type of spline: Rd or So3
+         * @brief st: the start timestamp
+         * @brief et: the end timestamp
+         * @brief dt: the time distance of the uniform spline
+         */
         std::string name;
         SplineType type;
         double st, et, dt;
@@ -42,6 +50,10 @@ namespace ns_ctraj {
         using SplineMetaType = ns_ctraj::SplineMeta<Order>;
 
     private:
+        /**
+         * @brief _so3Splines: container for so3 splines
+         * @brief _rdSplines: container for rd splines
+         */
         std::map<std::string, So3SplineType> _so3Splines;
         std::map<std::string, RdSplineType> _rdSplines;
 
@@ -50,6 +62,9 @@ namespace ns_ctraj {
             for (const auto &spline: splines) { AddSpline(spline); }
         }
 
+        /**
+         * @brief add a spline to the bundle based on its type
+         */
         SplineBundle &AddSpline(const SplineInfo &spline) {
             switch (spline.type) {
                 case SplineType::RdSpline: {
@@ -131,6 +146,10 @@ namespace ns_ctraj {
             CalculateSplineMeta(_rdSplines.at(name), times, splineMeta);
         }
 
+        /**
+         * @brief extent the spline to support state access at time t
+         * @param init: the initial state of newly-added knots
+         */
         template<class SplineType, class KnotType>
         static void ExtendKnotsTo(SplineType &spline, double t, const KnotType &init) {
             while ((spline.GetKnots().size() < N) || (spline.MaxTime() < t)) {
@@ -138,6 +157,10 @@ namespace ns_ctraj {
             }
         }
 
+        /**
+         * @brief compute the spline meta for the time piece sequence (@param times)
+         * @param times: a sequence of time piece
+         */
         template<class SplineType>
         static void CalculateSplineMeta(const SplineType &spline, time_init_t times, SplineMetaType &splineMeta) {
             double master_dt = spline.GetTimeInterval();
