@@ -75,12 +75,14 @@ namespace ns_ctraj {
             if (timeDis < 0.0) {
                 timeDis = this->GetDt();
             }
-            if (sTime < 0.0 || sTime > this->MaxTime()) {
-                sTime = this->MinTime();
+            if (sTime > eTime) {
+                double t = sTime;
+                sTime = eTime;
+                eTime = t;
             }
-            if (eTime < 0.0 || eTime > this->MaxTime()) {
-                eTime = this->MaxTime();
-            }
+            if (sTime < this->MinTime()) { sTime = this->MinTime(); }
+            if (eTime > this->MaxTime()) { eTime = this->MaxTime(); }
+
             std::vector<IMUFrame::Ptr> measurementVec;
             const auto &so3Spline = this->GetSo3Spline();
             const auto &posSpline = this->GetPosSpline();
@@ -92,7 +94,21 @@ namespace ns_ctraj {
                 measurementVec.push_back(IMUFrame::Create(t, gyro, acce));
                 t += timeDis;
             }
+
             return measurementVec;
+        }
+
+        IMUFrame::Ptr ComputeIMUMeasurement(double t, const Eigen::Vector3d &gravityInRef) {
+            if (t < this->MinTime() || t > this->MaxTime()) { return nullptr; }
+
+            const auto &so3Spline = this->GetSo3Spline();
+            const auto &posSpline = this->GetPosSpline();
+            auto SO3_ItoRef = so3Spline.Evaluate(t);
+            Eigen::Vector3d gyro = so3Spline.VelocityBody(t);
+            Eigen::Vector3d acceInRef = posSpline.Acceleration(t);
+            Eigen::Vector3d acce = SO3_ItoRef.inverse() * (acceInRef - gravityInRef);
+
+            return IMUFrame::Create(t, gyro, acce);
         }
 
         std::vector<IMUFrame::Ptr>
@@ -102,12 +118,14 @@ namespace ns_ctraj {
             if (timeDis < 0.0) {
                 timeDis = this->GetDt();
             }
-            if (sTime < 0.0 || sTime > this->MaxTime()) {
-                sTime = this->MinTime();
+            if (sTime > eTime) {
+                double t = sTime;
+                sTime = eTime;
+                eTime = t;
             }
-            if (eTime < 0.0 || eTime > this->MaxTime()) {
-                eTime = this->MaxTime();
-            }
+            if (sTime < this->MinTime()) { sTime = this->MinTime(); }
+            if (eTime > this->MaxTime()) { eTime = this->MaxTime(); }
+
             std::vector<IMUFrame::Ptr> measurementVec;
             for (double t = sTime; t < eTime;) {
                 auto SE3_CurToRef = this->Pose(t);
@@ -128,7 +146,30 @@ namespace ns_ctraj {
                 measurementVec.push_back(IMUFrame::Create(t, gyro, acce));
                 t += timeDis;
             }
+
             return measurementVec;
+        }
+
+        IMUFrame::Ptr
+        ComputeIMUMeasurement(double t, const Eigen::Vector3d &gravityInRef, const Sophus::SE3d &SE3Bias_NewToCur) {
+            if (t < this->MinTime() || t > this->MaxTime()) { return nullptr; }
+
+            auto SE3_CurToRef = this->Pose(t);
+            Eigen::Vector3d SO3_VEL_CurToRefInRef = this->AngularVeloInRef(t);
+            Eigen::Vector3d SO3_ACCE_CurToRefInRef = this->AngularAcceInRef(t);
+            Eigen::Vector3d POS_ACCE_CurToRefInRef = this->LinearAcceInRef(t);
+
+            Sophus::SE3d SE3_NewToRef = SE3_CurToRef * SE3Bias_NewToCur;
+
+            Eigen::Vector3d POS_ACCE_NewToRefInRef =
+                    -Sophus::SO3d::hat(SE3_CurToRef.so3() * SE3Bias_NewToCur.translation()) * SO3_ACCE_CurToRefInRef
+                    + POS_ACCE_CurToRefInRef - Sophus::SO3d::hat(SO3_VEL_CurToRefInRef) * Sophus::SO3d::hat(
+                            SE3_CurToRef.so3() * SE3Bias_NewToCur.translation()) * SO3_VEL_CurToRefInRef;
+
+            Eigen::Vector3d acce = SE3_NewToRef.so3().inverse() * (POS_ACCE_NewToRefInRef - gravityInRef);
+            Eigen::Vector3d gyro = SE3_NewToRef.so3().inverse() * SO3_VEL_CurToRefInRef;
+
+            return IMUFrame::Create(t, gyro, acce);
         }
 
         Eigen::Vector3d LinearAcceInRef(double t) {
