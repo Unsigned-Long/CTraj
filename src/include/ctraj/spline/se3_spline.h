@@ -296,6 +296,11 @@ namespace ns_ctraj {
             return pos_spline.MinTime();
         }
 
+        bool TimeStampInRange(double timeStamp) {
+            // left closed right open interval
+            return timeStamp >= this->MinTime() + 1E-6 && timeStamp < this->MaxTime() - 1E-6;
+        }
+
         /// @brief Number of knots in the spline
         [[nodiscard]] size_t NumKnots() const { return pos_spline.GetKnots().size(); }
 

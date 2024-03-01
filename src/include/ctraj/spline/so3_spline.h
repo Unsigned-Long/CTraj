@@ -105,6 +105,11 @@ namespace ns_ctraj {
         /// @return minimum time represented by spline in nanoseconds
         [[nodiscard]] double MinTime() const { return start_t_; }
 
+        bool TimeStampInRange(double timeStamp) {
+            // left closed right open interval
+            return timeStamp >= this->MinTime() + 1E-6 && timeStamp < this->MaxTime() - 1E-6;
+        }
+
         /// @brief Generate random trajectory
         ///
         /// @param[in] n number of knots to generate
