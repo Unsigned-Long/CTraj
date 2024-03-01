@@ -107,20 +107,20 @@ namespace ns_ctraj {
             return _rdSplines.at(name);
         }
 
-        bool TimeInRangeForSo3(double time, const std::string &name) {
+        [[nodiscard]] bool TimeInRangeForSo3(double time, const std::string &name) const {
             // left closed right open interval
             auto &spline = _so3Splines.at(name);
             return time >= spline.MinTime() + 1E-6 && time < spline.MaxTime() - 1E-6;
         }
 
-        bool TimeInRangeForRd(double time, const std::string &name) {
+        [[nodiscard]] bool TimeInRangeForRd(double time, const std::string &name) const {
             // left closed right open interval
             auto &spline = _rdSplines.at(name);
             return time >= spline.MinTime() + 1E-6 && time < spline.MaxTime() - 1E-6;
         }
 
         template<class SplineType>
-        bool TimeInRange(double time, const SplineType &spline) {
+        bool TimeInRange(double time, const SplineType &spline) const {
             // left closed right open interval
             return time >= spline.MinTime() + 1E-6 && time < spline.MaxTime() - 1E-6;
         }

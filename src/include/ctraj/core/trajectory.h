@@ -33,7 +33,7 @@ namespace ns_ctraj {
             return std::make_shared<Trajectory>(timeInterval, startTime, endTime);
         }
 
-        bool TimeStampInRange(double timeStamp) {
+        [[nodiscard]] bool TimeStampInRange(double timeStamp) const {
             // left closed right open interval
             return timeStamp >= this->MinTime() + 1E-6 && timeStamp < this->MaxTime() - 1E-6;
         }

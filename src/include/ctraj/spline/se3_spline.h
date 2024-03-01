@@ -296,7 +296,7 @@ namespace ns_ctraj {
             return pos_spline.MinTime();
         }
 
-        bool TimeStampInRange(double timeStamp) {
+        [[nodiscard]] bool TimeStampInRange(double timeStamp) const {
             // left closed right open interval
             return timeStamp >= this->MinTime() + 1E-6 && timeStamp < this->MaxTime() - 1E-6;
         }
