@@ -33,22 +33,16 @@ namespace ns_ctraj {
             return std::make_shared<Trajectory>(timeInterval, startTime, endTime);
         }
 
-        [[nodiscard]] bool TimeStampInRange(double timeStamp) const {
-            // left closed right open interval
-            return timeStamp >= this->MinTime() + 1E-6 && timeStamp < this->MaxTime() - 1E-6;
-        }
-
         Eigen::aligned_vector<Posed> Sampling(double timeDis = INVALID_TIME_STAMP, double sTime = INVALID_TIME_STAMP,
                                               double eTime = INVALID_TIME_STAMP) {
-            if (timeDis < 0.0) {
-                timeDis = this->GetDt();
+            if (sTime > eTime) {
+                double t = sTime;
+                sTime = eTime;
+                eTime = t;
             }
-            if (sTime < 0.0 || sTime > this->MaxTime()) {
-                sTime = this->MinTime();
-            }
-            if (eTime < 0.0 || eTime > this->MaxTime()) {
-                eTime = this->MaxTime();
-            }
+            if (timeDis < 0.0) { timeDis = this->GetDt(); }
+            if (IS_INVALID_TIME_STAMP(sTime) || !parent_type::TimeStampInRange(sTime)) { sTime = this->MinTime(); }
+            if (IS_INVALID_TIME_STAMP(eTime) || !parent_type::TimeStampInRange(eTime)) { eTime = this->MaxTime(); }
 
             Eigen::aligned_vector<Posed> poseSeq;
 
@@ -72,16 +66,14 @@ namespace ns_ctraj {
         std::vector<IMUFrame::Ptr>
         ComputeIMUMeasurement(const Eigen::Vector3d &gravityInRef, double timeDis = INVALID_TIME_STAMP,
                               double sTime = INVALID_TIME_STAMP, double eTime = INVALID_TIME_STAMP) {
-            if (timeDis < 0.0) {
-                timeDis = this->GetDt();
-            }
             if (sTime > eTime) {
                 double t = sTime;
                 sTime = eTime;
                 eTime = t;
             }
-            if (sTime < this->MinTime()) { sTime = this->MinTime(); }
-            if (eTime > this->MaxTime()) { eTime = this->MaxTime(); }
+            if (timeDis < 0.0) { timeDis = this->GetDt(); }
+            if (IS_INVALID_TIME_STAMP(sTime) || !parent_type::TimeStampInRange(sTime)) { sTime = this->MinTime(); }
+            if (IS_INVALID_TIME_STAMP(eTime) || !parent_type::TimeStampInRange(eTime)) { eTime = this->MaxTime(); }
 
             std::vector<IMUFrame::Ptr> measurementVec;
             const auto &so3Spline = this->GetSo3Spline();
@@ -99,7 +91,7 @@ namespace ns_ctraj {
         }
 
         IMUFrame::Ptr ComputeIMUMeasurement(double t, const Eigen::Vector3d &gravityInRef) {
-            if (t < this->MinTime() || t > this->MaxTime()) { return nullptr; }
+            if (!parent_type::TimeStampInRange(t)) { return nullptr; }
 
             const auto &so3Spline = this->GetSo3Spline();
             const auto &posSpline = this->GetPosSpline();
@@ -115,16 +107,14 @@ namespace ns_ctraj {
         ComputeIMUMeasurement(const Eigen::Vector3d &gravityInRef, const Sophus::SE3d &SE3Bias_NewToCur,
                               double timeDis = INVALID_TIME_STAMP, double sTime = INVALID_TIME_STAMP,
                               double eTime = INVALID_TIME_STAMP) {
-            if (timeDis < 0.0) {
-                timeDis = this->GetDt();
-            }
             if (sTime > eTime) {
                 double t = sTime;
                 sTime = eTime;
                 eTime = t;
             }
-            if (sTime < this->MinTime()) { sTime = this->MinTime(); }
-            if (eTime > this->MaxTime()) { eTime = this->MaxTime(); }
+            if (timeDis < 0.0) { timeDis = this->GetDt(); }
+            if (IS_INVALID_TIME_STAMP(sTime) || !parent_type::TimeStampInRange(sTime)) { sTime = this->MinTime(); }
+            if (IS_INVALID_TIME_STAMP(eTime) || !parent_type::TimeStampInRange(eTime)) { eTime = this->MaxTime(); }
 
             std::vector<IMUFrame::Ptr> measurementVec;
             for (double t = sTime; t < eTime;) {
@@ -152,7 +142,7 @@ namespace ns_ctraj {
 
         IMUFrame::Ptr
         ComputeIMUMeasurement(double t, const Eigen::Vector3d &gravityInRef, const Sophus::SE3d &SE3Bias_NewToCur) {
-            if (t < this->MinTime() || t > this->MaxTime()) { return nullptr; }
+            if (!parent_type::TimeStampInRange(t)) { return nullptr; }
 
             auto SE3_CurToRef = this->Pose(t);
             Eigen::Vector3d SO3_VEL_CurToRefInRef = this->AngularVeloInRef(t);
@@ -173,14 +163,14 @@ namespace ns_ctraj {
         }
 
         Eigen::Vector3d LinearAcceInRef(double t) {
-            if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
+            if (!parent_type::TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
             const auto &posSpline = this->GetPosSpline();
             Eigen::Vector3d acceInRef = posSpline.Acceleration(t);
             return acceInRef;
         }
 
         Eigen::Vector3d AngularVeloInRef(double t) {
-            if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
+            if (!parent_type::TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
             const auto &so3Spline = this->GetSo3Spline();
             auto SO3_BodyToRef = so3Spline.Evaluate(t);
             Eigen::Vector3d angularVelInRef = SO3_BodyToRef * so3Spline.VelocityBody(t);
@@ -188,14 +178,14 @@ namespace ns_ctraj {
         }
 
         Eigen::Vector3d LinearVeloInRef(double t) {
-            if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
+            if (!parent_type::TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
             const auto &posSpline = this->GetPosSpline();
             Eigen::Vector3d veloInRef = posSpline.Velocity(t);
             return veloInRef;
         }
 
         Eigen::Vector3d AngularAcceInRef(double t) {
-            if (!TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
+            if (!parent_type::TimeStampInRange(t)) { return Eigen::Vector3d::Zero(); }
             const auto &so3Spline = this->GetSo3Spline();
             auto SO3_BodyToRef = so3Spline.Evaluate(t);
             Eigen::Vector3d angularAcceInRef = SO3_BodyToRef * so3Spline.AccelerationBody(t);
@@ -208,6 +198,8 @@ namespace ns_ctraj {
          */
         Eigen::Vector4d
         RadarStaticMeasurement(double t, const Eigen::Vector3d &tarInRef, const Sophus::SE3d &SE3Bias_RtoI) {
+            if (!parent_type::TimeStampInRange(t)) { return Eigen::Vector4d::Zero(); }
+
             const auto SE3_CurToRef = this->Pose(t);
             Sophus::SE3d SE3_RefToR = (SE3_CurToRef * SE3Bias_RtoI).inverse();
             Eigen::Vector3d tarInR = SE3_RefToR * tarInRef;
