@@ -13,7 +13,6 @@
 #include "ctraj/core/pose.hpp"
 #include "ctraj/core/trajectory.h"
 
-#include "ceres/local_parameterization.h"
 #include "ceres/manifold.h"
 #include "ceres/ceres.h"
 
