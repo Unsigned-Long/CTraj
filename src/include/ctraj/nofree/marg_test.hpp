@@ -6,7 +6,7 @@
 #ifndef CTRAJ_MARG_TEST_HPP
 #define CTRAJ_MARG_TEST_HPP
 
-#include "ctraj/factors/marginalization_factor.h"
+#include "ctraj/factor/marginalization_factor.h"
 
 namespace ns_ctraj {
     struct F1 {

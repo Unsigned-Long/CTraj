@@ -7,8 +7,6 @@ project(ctraj VERSION 1.0)
 # -----------
 set(LIBRARY_NAME ctraj)
 
-set(LIBRARY_NAMESPACE CTraj)
-
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -26,33 +24,63 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 # for install
 # -----------
 
+# Configuration
+set(CONFIG_INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
+set(INCLUDE_INSTALL_DIR "include")
+set(VERSION_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}ConfigVersion.cmake")
+set(PROJ_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}Config.cmake")
+set(TARGETS_EXPORT_NAME "${LIBRARY_NAME}Targets")
+
+# Include module with function 'write_basic_package_version_file'
 include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)
 
-# Export package for use from the build tree
-set(LIBRARY_CMAKE_EXPORT_DIR ${CMAKE_INSTALL_DATADIR}/${LIBRARY_NAME}/cmake)
+# Configure '<PROJECT-NAME>ConfigVersion.cmake'
+# Note: PROJECT_VERSION is used as a VERSION
+write_basic_package_version_file("${VERSION_CONFIG}" COMPATIBILITY SameMajorVersion)
 
-set_target_properties(${LIBRARY_NAME} PROPERTIES EXPORT_NAME ${LIBRARY_NAMESPACE})
+# Configure '<PROJECT-NAME>Config.cmake'
+# Use variables:
+#   * TARGETS_EXPORT_NAME
+#   * PROJECT_NAME
+configure_package_config_file(
+        ${LIBRARY_NAME}Config.cmake.in
+        "${PROJ_CONFIG}"
+        INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}"
+)
 
+# Export '<LIBRARY_NAME>Targets.cmake' to build dir (to find package in build dir without install)
 export(
         TARGETS ${LIBRARY_NAME}
-        NAMESPACE ${LIBRARY_NAMESPACE}::
-        FILE ${LIBRARY_NAMESPACE}Targets.cmake
-)
-export(
-        PACKAGE ${LIBRARY_NAMESPACE}
+        FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGETS_EXPORT_NAME}.cmake"
 )
 
-configure_package_config_file(
-        ${LIBRARY_NAMESPACE}Config.cmake.in
-        ${CMAKE_BINARY_DIR}/${LIBRARY_NAMESPACE}Config.cmake
-        INSTALL_DESTINATION ${LIBRARY_CMAKE_EXPORT_DIR}
-        NO_CHECK_REQUIRED_COMPONENTS_MACRO
+# Targets:
+install(
+        TARGETS ${LIBRARY_NAME}
+        EXPORT "${TARGETS_EXPORT_NAME}"
+        LIBRARY DESTINATION "lib"
+        ARCHIVE DESTINATION "lib"
+        RUNTIME DESTINATION "bin"
+        INCLUDES DESTINATION "${INCLUDE_INSTALL_DIR}"
 )
 
-# Write version to file
-write_basic_package_version_file(
-        ${LIBRARY_NAMESPACE}ConfigVersion.cmake
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY AnyNewerVersion
+# Config
+install(
+        FILES "${PROJ_CONFIG}" "${VERSION_CONFIG}"
+        DESTINATION "${CONFIG_INSTALL_DIR}"
+)
+
+# Config
+install(
+        EXPORT "${TARGETS_EXPORT_NAME}"
+        NAMESPACE "${namespace}"
+        DESTINATION "${CONFIG_INSTALL_DIR}"
+)
+
+# Headers
+install(
+        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/include/${LIBRARY_NAME}
+        DESTINATION ${INCLUDE_INSTALL_DIR}
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN "*.hpp"
 )

@@ -4,7 +4,7 @@
 // systems and multi-sensor fusion.
 
 #include <utility>
-#include "ctraj/factors/marginalization_factor.h"
+#include "ctraj/factor/marginalization_factor.h"
 #include "cereal/archives/json.hpp"
 #include "fstream"
 

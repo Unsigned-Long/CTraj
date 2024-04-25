@@ -10,16 +10,29 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/core CORE_SRC_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/factor FACTOR_SRC_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/view VIEW_SRC_FILES)
 
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/include/ctraj/core CORE_HEADER_FILES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/include/ctraj/factor FACTOR_HEADER_FILES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/include/ctraj/nofree NOFREE_HEADER_FILES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/include/ctraj/spline SPLINE_HEADER_FILES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/include/ctraj/utils UTILS_HEADER_FILES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/include/ctraj/view VIEW_HEADER_FILES)
+
 add_library(
         ${LIBRARY_NAME} SHARED
         ${CORE_SRC_FILES} ${FACTOR_SRC_FILES} ${VIEW_SRC_FILES}
+        ${CORE_HEADER_FILES} ${FACTOR_HEADER_FILES} ${NOFREE_HEADER_FILES}
+        ${SPLINE_HEADER_FILES} ${UTILS_HEADER_FILES} ${VIEW_HEADER_FILES}
 )
+
+set(ADDITIONAL_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
 target_include_directories(
         ${LIBRARY_NAME} PUBLIC
-        ${EIGEN_INCLUDE_DIRS}
-        ${CERES_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        # only when building from the source tree
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        # only when using the lib from the install path
+        $<INSTALL_INTERFACE:include>
+        ${ADDITIONAL_INCLUDE_DIRS}
 )
 
 target_link_libraries(

@@ -16,14 +16,14 @@
 #include "ceres/manifold.h"
 #include "ceres/ceres.h"
 
-#include "ctraj/factors/se3_factor.hpp"
-#include "ctraj/factors/so3_factor.hpp"
-#include "ctraj/factors/pos_factor.hpp"
-#include "ctraj/factors/multi_imu_acce_factor.hpp"
-#include "ctraj/factors/multi_imu_gyro_factor.hpp"
-#include "ctraj/factors/imu_acce_factor.hpp"
-#include "ctraj/factors/imu_gyro_factor.hpp"
-#include "ctraj/factors/centralization_factor.hpp"
+#include "ctraj/factor/se3_factor.hpp"
+#include "ctraj/factor/so3_factor.hpp"
+#include "ctraj/factor/pos_factor.hpp"
+#include "ctraj/factor/multi_imu_acce_factor.hpp"
+#include "ctraj/factor/multi_imu_gyro_factor.hpp"
+#include "ctraj/factor/imu_acce_factor.hpp"
+#include "ctraj/factor/imu_gyro_factor.hpp"
+#include "ctraj/factor/centralization_factor.hpp"
 
 namespace ns_ctraj {
 
