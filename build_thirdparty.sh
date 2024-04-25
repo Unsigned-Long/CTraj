@@ -30,3 +30,4 @@ echo "-----------------------------"
 echo "start making 'tiny-viewer'..."
 echo "-----------------------------"
 make -j8
+cmake --install . --prefix ${CTRAJ_ROOT_PATH}/thirdparty/tiny-viewer-install

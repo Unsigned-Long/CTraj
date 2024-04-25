@@ -3,8 +3,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 find_package(Eigen3)
 find_package(Sophus)
 find_package(Ceres)
-set(TinyViewer_DIR ${CMAKE_SOURCE_DIR}/thirdparty/tiny-viewer-build)
-find_package(TinyViewer)
+set(tiny-viewer_DIR  ${CMAKE_SOURCE_DIR}/thirdparty/tiny-viewer-install/lib/cmake/tiny-viewer)
+find_package(tiny-viewer)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/core CORE_SRC_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/factor FACTOR_SRC_FILES)
@@ -39,7 +39,7 @@ target_link_libraries(
         ${LIBRARY_NAME} PUBLIC
         Sophus::Sophus
         ${CERES_LIBRARIES}
-        TinyViewer::TinyViewer
+        tiny-viewer
 )
 
 # example & test

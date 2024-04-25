@@ -25,7 +25,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 # -----------
 
 # Configuration
-set(CONFIG_INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
+set(CONFIG_INSTALL_DIR "lib/cmake/${LIBRARY_NAME}")
 set(INCLUDE_INSTALL_DIR "include")
 set(VERSION_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}ConfigVersion.cmake")
 set(PROJ_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}Config.cmake")
@@ -43,7 +43,7 @@ write_basic_package_version_file("${VERSION_CONFIG}" COMPATIBILITY SameMajorVers
 #   * TARGETS_EXPORT_NAME
 #   * PROJECT_NAME
 configure_package_config_file(
-        ${LIBRARY_NAME}Config.cmake.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in
         "${PROJ_CONFIG}"
         INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}"
 )

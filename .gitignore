@@ -4,6 +4,7 @@
 /install
 .idea
 /thirdparty/tiny-viewer-build/
+/thirdparty/tiny-viewer-install/
 
 *.pdf
 *.dtmp
