@@ -175,7 +175,7 @@ namespace ns_ctraj {
             rotMatrix.col(1) = yAxis;
             rotMatrix.col(2) = zAxis;
 
-            return {Sophus::SO3d(rotMatrix), trans, t};
+            return {Sophus::SO3d(Sophus::makeRotationMatrix(rotMatrix)), trans, t};
         }
     };
 
@@ -210,7 +210,7 @@ namespace ns_ctraj {
             rotMatrix.col(1) = yAxis;
             rotMatrix.col(2) = zAxis;
 
-            return {Sophus::SO3d(rotMatrix), trans, t};
+            return {Sophus::SO3d(Sophus::makeRotationMatrix(rotMatrix)), trans, t};
         }
     };
 
@@ -245,7 +245,7 @@ namespace ns_ctraj {
             rotMatrix.col(1) = yAxis;
             rotMatrix.col(2) = zAxis;
 
-            return {Sophus::SO3d(rotMatrix), trans, t};
+            return {Sophus::SO3d(Sophus::makeRotationMatrix(rotMatrix)), trans, t};
         }
     };
 
@@ -281,7 +281,7 @@ namespace ns_ctraj {
             rotMatrix.col(2) = zAxis;
             rotMatrix = Eigen::AngleAxisd(t, Eigen::Vector3d(0.0, 0.0, 1.0)).matrix() * rotMatrix;
 
-            return {Sophus::SO3d(rotMatrix), trans, t};
+            return {Sophus::SO3d(Sophus::makeRotationMatrix(rotMatrix)), trans, t};
         }
     };
 
@@ -317,7 +317,7 @@ namespace ns_ctraj {
             rotMatrix.col(1) = yAxis;
             rotMatrix.col(2) = zAxis;
 
-            return {Sophus::SO3d(rotMatrix), trans, t};
+            return {Sophus::SO3d(Sophus::makeRotationMatrix(rotMatrix)), trans, t};
         }
     };
 
@@ -348,7 +348,7 @@ namespace ns_ctraj {
             rotMatrix.col(1) = yAxis;
             rotMatrix.col(2) = zAxis;
 
-            return {Sophus::SO3d(rotMatrix), trans, t};
+            return {Sophus::SO3d(Sophus::makeRotationMatrix(rotMatrix)), trans, t};
         }
     };
 
@@ -380,7 +380,7 @@ namespace ns_ctraj {
             rotMatrix.col(1) = yAxis;
             rotMatrix.col(2) = zAxis;
 
-            return {Sophus::SO3d(rotMatrix), trans, t};
+            return {Sophus::SO3d(Sophus::makeRotationMatrix(rotMatrix)), trans, t};
         }
     };
 
@@ -411,11 +411,11 @@ namespace ns_ctraj {
             auto rot1 = Eigen::AngleAxisd(_randAngle(_engine), Eigen::Vector3d(0.0, 0.0, 1.0));
             auto rot2 = Eigen::AngleAxisd(_randAngle(_engine), Eigen::Vector3d(0.0, 1.0, 0.0));
             auto rot3 = Eigen::AngleAxisd(_randAngle(_engine), Eigen::Vector3d(1.0, 0.0, 0.0));
-            Eigen::Matrix3d deltaRotMatrix = (rot3 * rot2 * rot1).matrix();
+            Sophus::SO3d deltaRotMatrix = Sophus::makeRotationMatrix((rot3 * rot2 * rot1).matrix());
 
             _lastState.timeStamp = t;
             _lastState.t = _lastState.t + deltaTrans;
-            _lastState.so3 = Sophus::SO3d(deltaRotMatrix * _lastState.so3.matrix());
+            _lastState.so3 = deltaRotMatrix * _lastState.so3;
 
             return _lastState;
         }
