@@ -61,6 +61,7 @@ namespace ns_ctraj {
             auto poseSeq = _trajectory->Sampling(trajSamplingTimeDis);
             Viewer viewer(saveShotPath, "VisualizationDynamic");
             viewer.RunInMultiThread();
+            viewer.WaitForActive();
             for (int i = 0; (i < static_cast<int>(poseSeq.size()) - 1) && viewer.IsActive(); ++i) {
                 int j = i + 1;
                 const auto &pi = poseSeq.at(i);

@@ -35,7 +35,7 @@ void TEST_TRAJECTORY() {
     // auto traj2 = trajItoW * Sophus::SE3d(Sophus::SO3d(), Eigen::Vector3d(1, 1, 1));
     // auto traj3 = Sophus::SE3d(Sophus::SO3d(), Eigen::Vector3d(1, 1, 1)) * trajItoW;
 
-    trajItoW.Visualization("/home/csl/CppWorks/artwork/ctraj/img", false);
+    trajItoW.Visualization("/home/csl/CppWorks/artwork/ctraj/img", true);
     trajItoW.VisualizationDynamic("/home/csl/CppWorks/artwork/ctraj/img");
 
     trajItoW.GetTrajectory()->Save("/home/csl/CppWorks/artwork/ctraj/output/simu_wave_motion.json");
