@@ -32,14 +32,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef CTRAJ_MACROS_HPP
-#define CTRAJ_MACROS_HPP
+#include "ctraj/core/pose.hpp"
 
 namespace ns_ctraj {
-
-#define INVALID_TIME_STAMP (-1.0)
-
-#define IS_INVALID_TIME_STAMP(t) ((t) < 0.0)
+template struct Pose<double>;
+template struct Pose<float>;
 }  // namespace ns_ctraj
-
-#endif  // CTRAJ_MACROS_HPP
