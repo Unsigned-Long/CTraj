@@ -36,6 +36,11 @@ cmake_minimum_required(VERSION 3.16)
 
 project(ctraj VERSION 1.0)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall   -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=native")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
+
 # -----------
 # set lib name ans space
 # -----------
@@ -46,6 +51,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 set(CMAKE_BUILD_TYPE "Release")
+
+#if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.16")
+#    set(CMAKE_UNITY_BUILD ON)
+#    message(STATUS "use 'CMAKE_UNITY_BUILD' in building!")
+#else ()
+#    message(STATUS "do not use 'CMAKE_UNITY_BUILD' in building!")
+#endif ()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -Wno-unused-function")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -Wno-unused-function")

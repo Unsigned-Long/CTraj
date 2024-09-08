@@ -39,16 +39,19 @@
 #include "sophus/se3.hpp"
 #include "ctraj/utils/macros.hpp"
 #include "tiny-viewer/entity/utils.h"
+#include "tiny-viewer/core/pose.hpp"
 
 namespace ns_ctraj {
 template <class ScalarType>
 inline Sophus::Matrix3<ScalarType> AdjustRotationMatrix(const Sophus::Matrix3<ScalarType> &rotMat) {
-    // adjust
-    Eigen::JacobiSVD<Sophus::Matrix3<ScalarType>> svd(rotMat,
-                                                      Eigen::ComputeFullV | Eigen::ComputeFullU);
-    const Sophus::Matrix3<ScalarType> &vMatrix = svd.matrixV();
-    const Sophus::Matrix3<ScalarType> &uMatrix = svd.matrixU();
-    Sophus::Matrix3<ScalarType> adjustedRotMat = uMatrix * vMatrix.transpose();
+    // our implement
+    // Eigen::JacobiSVD<Sophus::Matrix3<ScalarType>> svd(rotMat,
+    //                                                   Eigen::ComputeFullV | Eigen::ComputeFullU);
+    // const Sophus::Matrix3<ScalarType> &vMatrix = svd.matrixV();
+    // const Sophus::Matrix3<ScalarType> &uMatrix = svd.matrixU();
+    // Sophus::Matrix3<ScalarType> adjustedRotMat = uMatrix * vMatrix.transpose();
+    // implement of sophus
+    Sophus::Matrix3<ScalarType> adjustedRotMat = Sophus::makeRotationMatrix(rotMat);
     return adjustedRotMat;
 }
 
@@ -132,6 +135,14 @@ public:
         Pose pose(timeStamp);
         pose.so3 = se3.so3();
         pose.t = se3.translation();
+        return pose;
+    }
+
+    static Pose FromTinyViewerPose(const ns_viewer::Pose<ScalarType> &tvPose,
+                                   double timeStamp = INVALID_TIME_STAMP) {
+        Pose pose(timeStamp);
+        pose.so3 = Sophus::SO3<ScalarType>(AdjustRotationMatrix(tvPose.rotation));
+        pose.t = tvPose.translation;
         return pose;
     }
 
