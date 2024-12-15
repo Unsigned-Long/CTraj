@@ -147,7 +147,7 @@ public:
     }
 
     template <class SplineType>
-    bool TimeInRange(double time, const SplineType &spline) const {
+    static bool TimeInRange(double time, const SplineType &spline) {
         // left closed right open interval
         return time >= spline.MinTime() + 1E-6 && time < spline.MaxTime() - 1E-6;
     }
